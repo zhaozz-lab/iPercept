@@ -18,10 +18,10 @@ class VGGNet(BaseModel):
             x = self.get_conv2d(name=layer_name, x=x, filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, data_format=data_format)
         return x
 
-    def get_conv2d(self, name, x, filters, kernel_size, strides, padding='same', data_format='channels_last'):
+    def get_conv2d(self, name, x, filters, kernel_size, strides, padding='same', data_format='channels_last', activation=tf.nn.relu):
         with tf.variable_scope(name):
             x = tf.layers.conv2d(x, filters=filters, kernel_size=kernel_size, strides=strides,
-                                         padding=padding, data_format=data_format)
+                                         padding=padding, data_format=data_format, activation=activation)
             self.summary.feature_maps('features', x, data_format=data_format)
         return x
 
@@ -77,10 +77,10 @@ class VGGNet(BaseModel):
             x = tf.contrib.layers.flatten(x)
 
             # FC layer
-            x = tf.layers.dense(x, units=512, name='fc4')
-            x = tf.layers.dense(x, units=256, name='fc5')
-            x = tf.layers.dense(x, units=128, name='fc6')
-            x = tf.layers.dense(x, units=64, name='fc7')
+            x = tf.layers.dense(x, units=512, name='fc4', activation=tf.nn.relu)
+            x = tf.layers.dense(x, units=256, name='fc5', activation=tf.nn.relu)
+            x = tf.layers.dense(x, units=128, name='fc6', activation=tf.nn.relu)
+            x = tf.layers.dense(x, units=64, name='fc7', activation=tf.nn.relu)
             self.summary.histogram('fc7/activations', x)
 
             # Directly regress two polar angles for gaze direction

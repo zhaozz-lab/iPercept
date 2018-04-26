@@ -5,7 +5,7 @@ import argparse
 import coloredlogs
 import tensorflow as tf
 
-from vggnet import VGGNet
+from models.vggnet import VGGNet
 
 if __name__ == '__main__':
 
