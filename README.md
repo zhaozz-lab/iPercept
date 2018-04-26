@@ -1,3 +1,12 @@
+# Setup
+
+
+
+
+
+
+# --------------------------
+
 # Eye Gaze Estimation Skeleton Code
 Visit [here](https://ait.ethz.ch/teaching/courses/2018-SS-Machine-Perception/) for more information about the Machine Perception course.
 
