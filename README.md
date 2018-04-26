@@ -66,3 +66,4 @@ python3 main.py
 When your model has completed training, it will perform a full evaluation on the test set. For class `ExampleNet`, this output can be found in the folder `outputs/ExampleNet/` as `to_submit_to_kaggle_XXXXXXXXX.csv`.
 
 Submit this `csv` file to our page on [Kaggle](https://www.kaggle.com/c/mp18-eye-gaze-estimation/submissions).
+=======
