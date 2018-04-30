@@ -81,7 +81,7 @@ if __name__ == '__main__':
 
         # Train this model for a set number of epochs
         model.train(
-            num_epochs=20,
+            num_epochs=100,
         )
 
         # Evaluate for Kaggle submission

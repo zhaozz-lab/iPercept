@@ -1,3 +1,0 @@
-model_checkpoint_path: "/data/eth/fs18_machine-perception/mp18-eye-gaze-estimation/outputs/ExampleNet/checkpoints/conv/model-5782"
-all_model_checkpoint_paths: "/data/eth/fs18_machine-perception/mp18-eye-gaze-estimation/outputs/ExampleNet/checkpoints/conv/model-2991"
-all_model_checkpoint_paths: "/data/eth/fs18_machine-perception/mp18-eye-gaze-estimation/outputs/ExampleNet/checkpoints/conv/model-5782"
