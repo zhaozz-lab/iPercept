@@ -234,7 +234,7 @@ class BaseModel(object):
             self.time.end('train_iteration')
 
             # Print progress
-            to_print = '%07d / %07d> '.format(current_step, num_steps)
+            to_print = '{:07} / {:07}> '.format(current_step, num_steps)
             to_print += ', '.join(['%s = %f' % (k, v)
                                    for k, v in zip(loss_term_keys, outcome['loss_terms'])])
             self.time.log_every('train_iteration', to_print, seconds=2)
