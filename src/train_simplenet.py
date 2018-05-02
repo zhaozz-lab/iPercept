@@ -7,9 +7,9 @@ import tensorflow as tf
 
 from models.simplenet import SimpleNet
 
-DEBUG = False
+DEBUG = True
 if DEBUG:
-    NUM_EPOCHS = 2
+    NUM_EPOCHS = 3
 else:
     NUM_EPOCHS = 100
 
