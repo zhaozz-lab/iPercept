@@ -7,6 +7,13 @@ import tensorflow as tf
 
 from models.vggnet import VGGNet
 
+DEBUG = False
+if DEBUG:
+    NUM_EPOCHS = 1
+else:
+    NUM_EPOCHS = 150
+
+
 if __name__ == '__main__':
 
     # Set global log level
@@ -81,7 +88,7 @@ if __name__ == '__main__':
 
         # Train this model for a set number of epochs
         model.train(
-            num_epochs=100,
+            num_epochs=NUM_EPOCHS,
         )
 
         # Evaluate for Kaggle submission

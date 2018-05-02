@@ -22,6 +22,7 @@ class VGGNet(BaseModel):
         with tf.variable_scope(name):
             x = tf.layers.conv2d(x, filters=filters, kernel_size=kernel_size, strides=strides,
                                          padding=padding, data_format=data_format, activation=activation)
+
             self.summary.feature_maps('features', x, data_format=data_format)
         return x
 
