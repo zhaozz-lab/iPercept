@@ -43,6 +43,9 @@ class SimpleNet(CustomModel):
             x = tf.layers.dense(x, units=500, name='fc4', activation=tf.nn.relu)
             self.summary.histogram('fc7/activations', x)
 
+            with tf.variable_scope('dropout'):
+                x = tf.layers.dropout(x, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN)
+
             # Directly regress two polar angles for gaze direction
             x = tf.layers.dense(x, units=2, name='fc8')
             self.summary.histogram('fc8/activations', x)
