@@ -208,7 +208,7 @@ class BaseModel(object):
         initial_step = self.checkpoint.load_all()
         current_step = initial_step
 
-        print('numsteps', num_steps, num_entries, num_epochs)
+        print('num_steps, num_entries, num_epochs:', num_steps, num_entries, num_epochs)
         for current_step in range(initial_step, num_steps):
             fetches = {}
 
