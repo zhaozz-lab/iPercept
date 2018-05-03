@@ -3,9 +3,9 @@ from typing import Dict
 
 import tensorflow as tf
 
+import util.gaze
 from core import BaseDataSource
 from models.custom import CustomModel
-import util.gaze
 
 data_format = "channels_last"  # Change this to "channels_first" to run on GPU
 

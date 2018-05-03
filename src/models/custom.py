@@ -77,6 +77,6 @@ class CustomModel(BaseModel):
         with tf.variable_scope(layer_name):
             x = tf.layers.max_pooling2d(x, pool_size=pool_size, strides=strides, padding=padding,
                                         data_format=data_format)
-            self.summary.filters('filters', x)
+            #self.summary.filters('filters', x)
             self.summary.feature_maps('features', x, data_format=data_format)
         return x
