@@ -9,7 +9,7 @@ from models.simplenet_dropout import SimpleNetDropout
 
 DEBUG = True
 if DEBUG:
-    NUM_EPOCHS = 3
+    NUM_EPOCHS = 2
 else:
     NUM_EPOCHS = 100
 

@@ -1,8 +1,6 @@
 
 from core import BaseModel
 import tensorflow as tf
-from typing import Dict
-from data_source import BaseDataSource
 
 
 class CustomModel(BaseModel):
@@ -10,10 +8,10 @@ class CustomModel(BaseModel):
     Custom extension to base model.
     We incorporate methods that help building larger networks faster.
     """
-
-    def build_model(self, data_sources: Dict[str, BaseDataSource], mode: str):
-        """Build model."""
-        raise NotImplementedError('BaseModel::build_model is not yet implemented.')
+    #
+    # def build_model(self, data_sources: Dict[str, BaseDataSource], mode: str):
+    #     """Build model."""
+    #     raise NotImplementedError('BaseModel::build_model is not yet implemented.')
 
     def get_conv2d_multi(self, base_name, n, x, filters, kernel_size=2, strides=1, padding='same',
                          data_format='channels_last', activation=tf.nn.relu):
