@@ -10,7 +10,7 @@ import util.gaze
 data_format = "channels_last"  # Change this to "channels_first" to run on GPU
 
 
-class SimpleNet(CustomModel):
+class SimpleNetDropout(CustomModel):
     """An example neural network architecture."""
 
     def build_model(self, data_sources: Dict[str, BaseDataSource], mode: str):
