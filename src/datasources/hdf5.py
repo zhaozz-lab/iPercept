@@ -9,6 +9,9 @@ import tensorflow as tf
 
 from core import BaseDataSource
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class HDF5Source(BaseDataSource):
     """HDF5 data loading class (using h5py)."""
@@ -31,6 +34,7 @@ class HDF5Source(BaseDataSource):
         index_counter = 0
         for key in keys_to_use:
             n = hdf5[key]['eye'].shape[0]
+            logger.info("number of eyes: {}".format(n))
             for i in range(n):
                 self._index_to_key[index_counter] = (key, i)
                 index_counter += 1

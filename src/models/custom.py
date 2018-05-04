@@ -82,8 +82,7 @@ class CustomModel(BaseModel):
         return x
 
     def augment_x(self, x: tf.Tensor, y, mode: str):
-        list_x = list()
-        list_x.append(x)
+        list_x = [x]
         list_y = [y]
 
         for i in range(3):
@@ -97,5 +96,5 @@ class CustomModel(BaseModel):
             list_y.append(y)
 
         result_x = tf.concat(list_x, axis=0)
-        result_y = tf.concat([y, y, y], axis=0)
+        result_y = tf.concat(list_y, axis=0)
         return result_x, result_y

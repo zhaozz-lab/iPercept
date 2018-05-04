@@ -7,7 +7,7 @@ import tensorflow as tf
 
 from models.simplenet import SimpleNet
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     NUM_EPOCHS = 3
 else:

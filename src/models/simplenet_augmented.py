@@ -13,7 +13,7 @@ data_format = "channels_last"  # Change this to "channels_first" to run on GPU
 logger = logging.getLogger(__name__)
 
 
-class SimpleNetDropout(CustomModel):
+class SimpLeNetAugmented(CustomModel):
     """An example neural network architecture."""
 
     def build_model(self, data_sources: Dict[str, BaseDataSource], mode: str):
@@ -46,20 +46,31 @@ class SimpleNetDropout(CustomModel):
 
             x = self.get_max_pooling2d('maxpool2', x, pool_size=2, strides=2, padding='same', data_format=data_format)
 
+            x = self.get_conv2d_multi("conv3", 1, x, filters=50, kernel_size=5, strides=2, padding='same', data_format=data_format)
+
+            x = self.get_max_pooling2d('maxpool3', x, pool_size=3, strides=2, padding='same', data_format=data_format)
+
         with tf.variable_scope('fc'):
             # Flatten the 50 feature maps down to one vector
             x = tf.contrib.layers.flatten(x)
 
             # FC layer
-            x = tf.layers.dense(x, units=500, name='fc4', activation=tf.nn.relu)
-            self.summary.histogram('fc7/activations', x)
+            x = tf.layers.dense(x, units=500, name='fc500-1', activation=tf.nn.relu)
+            self.summary.histogram('fc7/activations1', x)
 
-            with tf.variable_scope('dropout'):
+            with tf.variable_scope('dropout1'):
+                x = tf.layers.dropout(x, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN)
+
+            # FC layer
+            x = tf.layers.dense(x, units=200, name='fc200-1', activation=tf.nn.relu)
+            self.summary.histogram('fc7/activations2', x)
+
+            with tf.variable_scope('dropout2'):
                 x = tf.layers.dropout(x, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN)
 
             # Directly regress two polar angles for gaze direction
-            x = tf.layers.dense(x, units=2, name='fc8')
-            self.summary.histogram('fc8/activations', x)
+            x = tf.layers.dense(x, units=2, name='fc2')
+            self.summary.histogram('fc8/activations_output', x)
 
         # Define outputs
         with tf.variable_scope('mse'):  # To optimize

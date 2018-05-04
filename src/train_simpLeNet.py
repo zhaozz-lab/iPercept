@@ -5,7 +5,7 @@ import argparse
 import coloredlogs
 import tensorflow as tf
 
-from models.simplenet_dropout import SimpleNetDropout
+from models.simplenet_augmented import SimpLeNetAugmented
 
 DEBUG = False
 if DEBUG:
@@ -13,13 +13,18 @@ if DEBUG:
 else:
     NUM_EPOCHS = 100
 
-Model = SimpleNetDropout
+Model = SimpLeNetAugmented
+
+LEARNING_RATE = 0.0005
+BATCH_SIZE = 128
+BETA1 = 0.9
+BETA2 = 0.99
 
 
 if __name__ == '__main__':
 
     # Set global log level
-    parser = argparse.ArgumentParser(description='SimpleNetDropout')
+    parser = argparse.ArgumentParser(description='SimpLeNet')
     parser.add_argument('-v', type=str, help='logging level', default='info',
                         choices=['debug', 'info', 'warning', 'error', 'critical'])
     args = parser.parse_args()
@@ -35,10 +40,10 @@ if __name__ == '__main__':
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as session:
 
         # Declare some parameters
-        batch_size = 256
+        batch_size = BATCH_SIZE
 
         # Define model
-        from datasources import HDF5Source
+        from datasources import HDF5Source, UnityEyes
         model = Model(
             # Tensorflow session
             # Note: The same session must be used for the model and the data sources.
@@ -60,7 +65,7 @@ if __name__ == '__main__':
                         'gaze_mse': ['conv', 'fc'],
                     },
                     'metrics': ['gaze_angular'],
-                    'learning_rate': 1e-3,
+                    'learning_rate': LEARNING_RATE,
                 },
             ],
 
@@ -75,6 +80,11 @@ if __name__ == '__main__':
                     keys_to_use=['train'],
                     min_after_dequeue=100,
                 ),
+                'unity': UnityEyes(
+                    session,
+                    batch_size,
+                    unityeyes_path='../datasets/UnityEyes/',
+                )
             },
             test_data={
                 'real': HDF5Source(
@@ -85,6 +95,8 @@ if __name__ == '__main__':
                     testing=True,
                 ),
             },
+            beta1=BETA1,
+            beta2=BETA2
         )
 
         # Train this model for a set number of epochs

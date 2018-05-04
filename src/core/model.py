@@ -28,7 +28,9 @@ class BaseModel(object):
                  learning_schedule: List[Dict[str, Any]],
                  train_data: Dict[str, BaseDataSource],
                  test_data: Dict[str, BaseDataSource] = {},
-                 test_losses_or_metrics: str = None):
+                 test_losses_or_metrics: str = None,
+                 beta1: float = .9,
+                 beta2: float = .999):
         """Initialize model with data sources and parameters."""
         assert len(train_data) > 0
         self._tensorflow_session = tensorflow_session
@@ -36,6 +38,8 @@ class BaseModel(object):
         self._test_data = test_data
         self._test_losses_or_metrics = test_losses_or_metrics
         self._initialized = False
+        self.beta1 = beta1
+        self.beta2 = beta2
 
         # Extract and keep known prefixes/scopes
         self._learning_schedule = learning_schedule
@@ -187,6 +191,9 @@ class BaseModel(object):
                     ]
                 optimize_op = tf.train.AdamOptimizer(
                     learning_rate=spec['learning_rate'],
+                    # Added 4.5.18, marcel
+                    beta1=self.beta1,
+                    beta2=self.beta2
                     # beta1=0.9,
                     # beta2=0.999,
                 ).minimize(
@@ -208,7 +215,7 @@ class BaseModel(object):
         initial_step = self.checkpoint.load_all()
         current_step = initial_step
 
-        print('num_steps, num_entries, num_epochs:', num_steps, num_entries, num_epochs)
+        logger.info('num_steps, num_entries, num_epochs: {}, {}, {}'.format(num_steps, num_entries, num_epochs))
         for current_step in range(initial_step, num_steps):
             fetches = {}
 
