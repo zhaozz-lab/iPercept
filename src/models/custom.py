@@ -80,3 +80,22 @@ class CustomModel(BaseModel):
             #self.summary.filters('filters', x)
             self.summary.feature_maps('features', x, data_format=data_format)
         return x
+
+    def augment_x(self, x: tf.Tensor, y, mode: str):
+        list_x = list()
+        list_x.append(x)
+        list_y = [y]
+
+        for i in range(3):
+            #x_flipped_left_right = tf.map_fn(lambda img: tf.image.random_flip_left_right(img), x)
+            x_random_brightness = tf.map_fn(lambda img: tf.image.random_brightness(img, max_delta=.5), x)
+            x_random_contrast = tf.map_fn(lambda img: tf.image.random_contrast(img, .5, 1.5), x)
+            list_x.append(x_random_contrast)
+            list_x.append(x_random_brightness)
+
+            list_y.append(y)
+            list_y.append(y)
+
+        result_x = tf.concat(list_x, axis=0)
+        result_y = tf.concat([y, y, y], axis=0)
+        return result_x, result_y
