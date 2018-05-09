@@ -85,10 +85,10 @@ class CustomModel(BaseModel):
         list_x = [x]
         list_y = [y]
 
-        for i in range(3):
+        for i in range(1):
             #x_flipped_left_right = tf.map_fn(lambda img: tf.image.random_flip_left_right(img), x)
-            x_random_brightness = tf.map_fn(lambda img: tf.image.random_brightness(img, max_delta=.5), x)
-            x_random_contrast = tf.map_fn(lambda img: tf.image.random_contrast(img, .5, 1.5), x)
+            x_random_brightness = tf.map_fn(lambda img: tf.image.random_brightness(img, max_delta=.8), x)
+            x_random_contrast = tf.map_fn(lambda img: tf.image.random_contrast(img, .2, 1.8), x)
             list_x.append(x_random_contrast)
             list_x.append(x_random_brightness)
 
