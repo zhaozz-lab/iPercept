@@ -60,7 +60,7 @@ class CustomModel(BaseModel):
             self.summary.feature_maps('features', x, data_format=data_format)
         return x
 
-    def get_max_pooling2d(self, base_name, x, pool_size, strides, padding, data_format):
+    def get_max_pooling2d(self, base_name: str, x, pool_size: int, strides: int, padding, data_format):
         """
         Creates a single max pooling layer.
         Layer is named in the following way:
