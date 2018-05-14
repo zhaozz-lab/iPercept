@@ -37,7 +37,7 @@ JPEG_DATA_TENSOR_NAME = 'DecodeJpeg/contents:0'
 RESIZED_INPUT_TENSOR_NAME = 'ResizeBilinear:0'
 MAX_NUM_IMAGES_PER_CLASS = 2 ** 27 - 1  # ~134M
 
-model_dir = 'inception'
+model_dir = '../../pretrained_models/inception'
 image_dir = 'train'
 bottleneck_dir = 'bottlenecks'
 
@@ -130,7 +130,7 @@ def main():
 
         eye_data = load_images_from_hd5(path_in, key, 'eye')
 
-        eye_data = eye_data[:1000]
+        #eye_data = eye_data[:1000]
 
         bottleneck_values = create_bottleneck_values(sess, jpeg_data_tensor, bottleneck_tensor, eye_data)
 

@@ -103,3 +103,4 @@ ENV/
 .idea/
 datasets/
 outputs/*
+pretrained_models/*
