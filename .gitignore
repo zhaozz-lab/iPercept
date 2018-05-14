@@ -99,8 +99,10 @@ ENV/
 
 # mypy
 .mypy_cache/
-<<<<<<< HEAD
 
 .idea/
 datasets/
 outputs/*
+
+# Numpy Files
+*.npz

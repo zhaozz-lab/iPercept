@@ -5,26 +5,21 @@ import argparse
 import coloredlogs
 import tensorflow as tf
 
-from models.simplenet_augmented2 import SimpLeNetAugmented2
+from models.vgg16Transfer import vgg16Transfer
 
 DEBUG = False
 if DEBUG:
     NUM_EPOCHS = 2
 else:
-    NUM_EPOCHS = 60
+    NUM_EPOCHS = 100
 
-Model = SimpLeNetAugmented2
-
-LEARNING_RATE = 0.0005
-BATCH_SIZE = 128
-BETA1 = 0.9
-BETA2 = 0.99
+Model = vgg16Transfer
 
 
 if __name__ == '__main__':
 
     # Set global log level
-    parser = argparse.ArgumentParser(description='SimpLeNet')
+    parser = argparse.ArgumentParser(description='vgg16Transfer')
     parser.add_argument('-v', type=str, help='logging level', default='info',
                         choices=['debug', 'info', 'warning', 'error', 'critical'])
     args = parser.parse_args()
@@ -40,10 +35,10 @@ if __name__ == '__main__':
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as session:
 
         # Declare some parameters
-        batch_size = BATCH_SIZE
+        batch_size = 10
 
         # Define model
-        from datasources import HDF5Source, UnityEyes
+        from datasources import HDF5Source
         model = Model(
             # Tensorflow session
             # Note: The same session must be used for the model and the data sources.
@@ -65,7 +60,7 @@ if __name__ == '__main__':
                         'gaze_mse': ['conv', 'fc'],
                     },
                     'metrics': ['gaze_angular'],
-                    'learning_rate': LEARNING_RATE,
+                    'learning_rate': 1e-3,
                 },
             ],
 
@@ -80,11 +75,6 @@ if __name__ == '__main__':
                     keys_to_use=['train'],
                     min_after_dequeue=100,
                 ),
-                'unity': UnityEyes(
-                    session,
-                    batch_size,
-                    unityeyes_path='../datasets/UnityEyes/',
-                )
             },
             test_data={
                 'real': HDF5Source(
@@ -95,9 +85,10 @@ if __name__ == '__main__':
                     testing=True,
                 ),
             },
-            beta1=BETA1,
-            beta2=BETA2
         )
+        # Load Weights
+        model.load_weights('models/vggExample/vgg16_weights.npz', session)
+
 
         # Train this model for a set number of epochs
         model.train(
