@@ -6,7 +6,7 @@ import coloredlogs
 import tensorflow as tf
 
 from datasources.hdf5 import HDF5Source
-from models.ccpnet import CCPNet
+from models.cccpnet import CCCPNet
 from util.train_model import get_model
 
 
@@ -14,13 +14,13 @@ DEBUG = False
 if DEBUG:
     NUM_EPOCHS = 2
 else:
-    NUM_EPOCHS = 200
+    NUM_EPOCHS = 150
 
 # Declare some parameters
 batch_size = 512
 learning_rate = 4e-3
 hdf_path = '../datasets/MPIIGaze_kaggle_students.h5'
-model = CCPNet
+model = CCCPNet
 
 if __name__ == '__main__':
     # Set global log level
