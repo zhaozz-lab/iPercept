@@ -14,7 +14,7 @@ DEBUG = False
 if DEBUG:
     NUM_EPOCHS = 2
 else:
-    NUM_EPOCHS = 200
+    NUM_EPOCHS = 150
 
 # Declare some parameters
 batch_size = 512

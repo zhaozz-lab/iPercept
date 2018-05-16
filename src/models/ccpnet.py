@@ -16,6 +16,15 @@ logger = logging.getLogger(__name__)
 class CCPNet(CustomModel):
     """An example neural network architecture."""
 
+    # def get_optimizer(self, spec):
+    #     return tf.train.GradientDescentOptimizer(
+    #     learning_rate = spec['learning_rate'],
+    #     )
+
+    def get_identifier(self):
+        return "CCPNet_augmented"
+        # return "CCPNet_augmented_sgd"
+
     def build_model(self, data_sources: Dict[str, BaseDataSource], mode: str):
         """Build model."""
         data_source = next(iter(data_sources.values()))
@@ -27,9 +36,9 @@ class CCPNet(CustomModel):
         y = input_tensors['gaze']
 
         # # only augment if training
-        # if mode == tf.estimator.ModeKeys.TRAIN:
-        #     with tf.variable_scope('augmentation'):
-        #         x, y = self.augment_x(x, y, mode=mode)
+        if mode == tf.estimator.ModeKeys.TRAIN:
+            with tf.variable_scope('augmentation'):
+                x, y = self.augment_x(x, y)
 
         # Trainable parameters should be specified within a known `tf.variable_scope`.
         # This tag is later used to specify the `learning_schedule` which describes when to train

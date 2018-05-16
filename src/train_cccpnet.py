@@ -14,11 +14,11 @@ DEBUG = False
 if DEBUG:
     NUM_EPOCHS = 2
 else:
-    NUM_EPOCHS = 150
+    NUM_EPOCHS = 200
 
 # Declare some parameters
 batch_size = 512
-learning_rate = 4e-3
+learning_rate = 4e-4
 hdf_path = '../datasets/MPIIGaze_kaggle_students.h5'
 model = CCCPNet
 

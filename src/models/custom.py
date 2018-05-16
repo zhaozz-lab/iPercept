@@ -81,7 +81,7 @@ class CustomModel(BaseModel):
             self.summary.feature_maps('features', x, data_format=data_format)
         return x
 
-    def augment_x(self, x: tf.Tensor, y, mode: str):
+    def augment_x(self, x: tf.Tensor, y, add_noise=False):
         list_x = [x]
         list_y = [y]
 
@@ -97,4 +97,8 @@ class CustomModel(BaseModel):
 
         result_x = tf.concat(list_x, axis=0)
         result_y = tf.concat(list_y, axis=0)
+
+        if add_noise:
+            noise = tf.random_normal(shape=tf.shape(result_x), mean=0.0, stddev=0.01)
+            result_x = result_x + noise
         return result_x, result_y
