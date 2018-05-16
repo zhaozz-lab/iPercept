@@ -81,19 +81,28 @@ class CustomModel(BaseModel):
             self.summary.feature_maps('features', x, data_format=data_format)
         return x
 
+    def get_residual_block(self, x_input: tf.Tensor, x_output: tf.Tensor):
+        """
+        Resizes x_input to match the size of x_output. Returns sum.
+        :param x_input: Input to block
+        :param x_output: Output of inner block
+        :return:
+        """
+        # Resize x_output
+        residual = tf.image.resize_images(x_input[:,:,:,0:1], size=x_output.get_shape()[1:3])
+        return x_output + residual
+
     def augment_x(self, x: tf.Tensor, y, add_noise=False):
         list_x = [x]
         list_y = [y]
 
-        for i in range(1):
-            #x_flipped_left_right = tf.map_fn(lambda img: tf.image.random_flip_left_right(img), x)
-            x_random_brightness = tf.map_fn(lambda img: tf.image.random_brightness(img, max_delta=.8), x)
-            x_random_contrast = tf.map_fn(lambda img: tf.image.random_contrast(img, .2, 1.8), x)
-            list_x.append(x_random_contrast)
-            list_x.append(x_random_brightness)
+        x_random_brightness = tf.map_fn(lambda img: tf.image.random_brightness(img, max_delta=.8), x)
+        x_random_contrast = tf.map_fn(lambda img: tf.image.random_contrast(img, .2, 1.8), x)
+        list_x.append(x_random_contrast)
+        list_x.append(x_random_brightness)
 
-            list_y.append(y)
-            list_y.append(y)
+        list_y.append(y)
+        list_y.append(y)
 
         result_x = tf.concat(list_x, axis=0)
         result_y = tf.concat(list_y, axis=0)
