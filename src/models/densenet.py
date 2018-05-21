@@ -83,7 +83,6 @@ class DenseNet(BaseModel):
                 l = tf.nn.relu(l)
                 l = GlobalAvgPooling('gap', l)
                 logits = FullyConnected('linear', l, out_dim=2, nl=tf.identity)
-                self.summary.histogram('regression/logits', logits)
 
             return logits
 
