@@ -5,6 +5,19 @@ import argparse
 import coloredlogs
 import tensorflow as tf
 
+from models.densenet import DenseNet
+
+Model = DenseNet
+
+DEBUG = False
+if DEBUG:
+    NUM_EPOCHS = 2
+else:
+    NUM_EPOCHS = 60
+
+LEARNING_RATE = 0.001
+BATCH_SIZE = 64
+
 if __name__ == '__main__':
 
     # Set global log level
@@ -24,12 +37,12 @@ if __name__ == '__main__':
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as session:
 
         # Declare some parameters
-        batch_size = 64
+        batch_size = BATCH_SIZE
 
         # Define model
         from datasources import HDF5Source
-        from models.densenet import DenseNet
-        model = DenseNet(
+
+        model = Model(
             # Tensorflow session
             # Note: The same session must be used for the model and the data sources.
             session,
@@ -50,7 +63,7 @@ if __name__ == '__main__':
                         'gaze_mse': ['block1', 'block2', 'block3', 'regression'],
                     },
                     'metrics': ['gaze_angular'],
-                    'learning_rate': 1e-3,
+                    'learning_rate': LEARNING_RATE,
                 },
             ],
 
@@ -79,7 +92,7 @@ if __name__ == '__main__':
 
         # Train this model for a set number of epochs
         model.train(
-            num_epochs=20,
+            num_epochs=NUM_EPOCHS,
         )
 
         # Evaluate for Kaggle submission
