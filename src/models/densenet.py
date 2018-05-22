@@ -19,8 +19,8 @@ class DenseNet(BaseModel):
         """Build model."""
 
         # Hardcoded for now
-        #self.N = int((depth - 4) / 3)
-        self.N = 40
+        depth = 40
+        self.N = int((depth - 4) / 3)
         self.growthRate = 12
 
         data_source = next(iter(data_sources.values()))
@@ -54,8 +54,23 @@ class DenseNet(BaseModel):
                 l = tf.layers.batch_normalization(l, name='bn1')
                 l = tf.nn.relu(l)
                 l = Conv2D('conv1', l, in_channel, 1, stride=1, use_bias=False, nl=tf.nn.relu, data_format=data_format)
-                l = AvgPooling('pool', l, 2)
+                # changed from tensorpack
+                l = tf.layers.AveragePooling2D(name='pool', value=l, ksize=2,  data_format=data_format)
             return l
+
+        def global_average_pooling(x, data_format='channels_last', name=None):
+            """
+            Global average pooling as in the paper `Network In Network
+            <http://arxiv.org/abs/1312.4400>`_.
+            Args:
+                x (tf.Tensor): a 4D tensor.
+            Returns:
+                tf.Tensor: a NC tensor named ``output``.
+            """
+            assert x.shape.ndims == 4
+            data_format = get_data_format(data_format)
+            axis = [1, 2] if data_format == 'channels_last' else [2, 3]
+            return tf.reduce_mean(x, axis, name=name)
 
         def dense_net(name):
             l = conv('conv0', x, 16, 1)
@@ -81,8 +96,9 @@ class DenseNet(BaseModel):
                 #l = BatchNorm('bnlast', l)
                 l = tf.layers.batch_normalization(l, name='bnlast')
                 l = tf.nn.relu(l)
-                l = GlobalAvgPooling('gap', l)
-                logits = FullyConnected('linear', l, out_dim=2, nl=tf.identity)
+                l = global_average_pooling(name='gap', x=l, data_format=data_format)
+                #logits = FullyConnected('linear', l, out_dim=2, nl=tf.identity)
+                logits = tf.layers.dense(l, units=2, name='fc4', activation=tf.nn.relu)
 
             return logits
 
