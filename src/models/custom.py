@@ -96,8 +96,8 @@ class CustomModel(BaseModel):
         list_x = [x]
         list_y = [y]
 
-        x_random_brightness = tf.map_fn(lambda img: tf.image.random_brightness(img, max_delta=.8), x)
-        x_random_contrast = tf.map_fn(lambda img: tf.image.random_contrast(img, .2, 1.8), x)
+        x_random_brightness = tf.map_fn(lambda img: tf.image.random_brightness(img, max_delta=.4), x)
+        x_random_contrast = tf.map_fn(lambda img: tf.image.random_contrast(img, .6, 1.4), x)
         list_x.append(x_random_contrast)
         list_x.append(x_random_brightness)
 
@@ -108,6 +108,9 @@ class CustomModel(BaseModel):
         result_y = tf.concat(list_y, axis=0)
 
         if add_noise:
-            noise = tf.random_normal(shape=tf.shape(result_x), mean=0.0, stddev=0.01)
-            result_x = result_x + noise
+            # TODO: debug
+            import numpy as np
+            random_indeces = np.random.rand(result_x.get_shape()[0])
+            noise = tf.random_normal(shape=result_x[random_indeces].get_shape(), mean=0.0, stddev=0.001)
+            result_x[random_indeces] = result_x[random_indeces] + noise
         return result_x, result_y
