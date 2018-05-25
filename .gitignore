@@ -106,3 +106,5 @@ outputs/*
 
 # Numpy Files
 *.npz
+
+pretrained_models
