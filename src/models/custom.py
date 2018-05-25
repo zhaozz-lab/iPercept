@@ -60,7 +60,7 @@ class CustomModel(BaseModel):
             self.summary.feature_maps('features', x, data_format=data_format)
         return x
 
-    def get_max_pooling2d(self, base_name, x, pool_size, strides, padding, data_format):
+    def get_max_pooling2d(self, base_name: str, x, pool_size: int, strides: int, padding, data_format):
         """
         Creates a single max pooling layer.
         Layer is named in the following way:
@@ -81,20 +81,36 @@ class CustomModel(BaseModel):
             self.summary.feature_maps('features', x, data_format=data_format)
         return x
 
-    def augment_x(self, x: tf.Tensor, y, mode: str):
+    def get_residual_block(self, x_input: tf.Tensor, x_output: tf.Tensor):
+        """
+        Resizes x_input to match the size of x_output. Returns sum.
+        :param x_input: Input to block
+        :param x_output: Output of inner block
+        :return:
+        """
+        # Resize x_output
+        residual = tf.image.resize_images(x_input[:,:,:,0:1], size=x_output.get_shape()[1:3])
+        return x_output + residual
+
+    def augment_x(self, x: tf.Tensor, y, add_noise=False):
         list_x = [x]
         list_y = [y]
 
-        for i in range(1):
-            #x_flipped_left_right = tf.map_fn(lambda img: tf.image.random_flip_left_right(img), x)
-            x_random_brightness = tf.map_fn(lambda img: tf.image.random_brightness(img, max_delta=.8), x)
-            x_random_contrast = tf.map_fn(lambda img: tf.image.random_contrast(img, .2, 1.8), x)
-            list_x.append(x_random_contrast)
-            list_x.append(x_random_brightness)
+        x_random_brightness = tf.map_fn(lambda img: tf.image.random_brightness(img, max_delta=.4), x)
+        x_random_contrast = tf.map_fn(lambda img: tf.image.random_contrast(img, .6, 1.4), x)
+        list_x.append(x_random_contrast)
+        list_x.append(x_random_brightness)
 
-            list_y.append(y)
-            list_y.append(y)
+        list_y.append(y)
+        list_y.append(y)
 
         result_x = tf.concat(list_x, axis=0)
         result_y = tf.concat(list_y, axis=0)
+
+        if add_noise:
+            # TODO: debug
+            import numpy as np
+            random_indeces = np.random.rand(result_x.get_shape()[0])
+            noise = tf.random_normal(shape=result_x[random_indeces].get_shape(), mean=0.0, stddev=0.001)
+            result_x[random_indeces] = result_x[random_indeces] + noise
         return result_x, result_y

@@ -5,15 +5,15 @@ import argparse
 import coloredlogs
 import tensorflow as tf
 
-from models.simplenet_augmented import SimpLeNetAugmented
+from models.simplenet_augmented2 import SimpLeNetAugmented2
 
 DEBUG = False
 if DEBUG:
     NUM_EPOCHS = 2
 else:
-    NUM_EPOCHS = 100
+    NUM_EPOCHS = 60
 
-Model = SimpLeNetAugmented
+Model = SimpLeNetAugmented2
 
 LEARNING_RATE = 0.0005
 BATCH_SIZE = 128

@@ -7,7 +7,7 @@ import h5py
 import numpy as np
 import tensorflow as tf
 
-from core import BaseDataSource
+from core.data_source import  BaseDataSource
 
 import logging
 logger = logging.getLogger(__name__)
@@ -109,4 +109,13 @@ class HDF5Source(BaseDataSource):
         for key, value in entry.items():
             entry[key] = value.astype(np.float32)
 
+        return entry
+
+
+class HDF5SourceRaw(HDF5Source):
+
+    def preprocess_entry(self, entry):
+        # entries are in float64, but tensor expects float32
+        entry['eye'] = entry['eye'].astype(np.float32)
+        entry['gaze'] = entry['gaze'].astype(np.float32)
         return entry

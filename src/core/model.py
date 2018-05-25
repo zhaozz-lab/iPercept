@@ -75,10 +75,13 @@ class BaseModel(object):
 
         self._build_all_models()
 
+    def get_identifier(self):
+        return self.__class__.__name__
+
     @property
     def identifier(self):
         """Identifier for model based on data sources and parameters."""
-        return self.__class__.__name__
+        return self.get_identifier()
 
     @property
     def output_path(self):
@@ -173,6 +176,17 @@ class BaseModel(object):
         self._tensorflow_session.run(tf.global_variables_initializer())
         self._initialized = True
 
+    def get_optimizer(self, spec):
+        # changed 15.5.18, marcel
+        return tf.train.AdamOptimizer(
+        learning_rate = spec['learning_rate'],
+        # Added 4.5.18, marcel
+        beta1 = self.beta1,
+        beta2 = self.beta2
+        # beta1=0.9,
+        # beta2=0.999,
+        )
+
     def _build_optimizers(self):
         """Based on learning schedule, create optimizer instances."""
         self._optimize_ops = []
@@ -189,20 +203,15 @@ class BaseModel(object):
                         v for v in all_trainable_variables
                         if v.name.startswith(prefix)
                     ]
-                optimize_op = tf.train.AdamOptimizer(
-                    learning_rate=spec['learning_rate'],
-                    # Added 4.5.18, marcel
-                    beta1=self.beta1,
-                    beta2=self.beta2
-                    # beta1=0.9,
-                    # beta2=0.999,
-                ).minimize(
+                optimize_op = self.get_optimizer(spec).minimize(
                     loss=self.loss_terms['train'][loss_term_key],
                     var_list=variables_to_train,
                     name='optimize_%s' % loss_term_key,
                 )
                 optimize_ops.append(optimize_op)
+                logger.info('Using optimizer: %s' % self.get_optimizer(spec).__class__)
             self._optimize_ops.append(optimize_ops)
+
             logger.info('Built optimizer for: %s' % ', '.join(loss_terms.keys()))
 
     def train(self, num_epochs=None, num_steps=None):
