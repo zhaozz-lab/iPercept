@@ -3,16 +3,19 @@ from typing import Dict
 
 
 import tensorflow as tf
+
 #from tensorpack import *
 #from tensorpack.tfutils.symbolic_functions import *
 #from tensorpack.tfutils.summary import *
+
+
 
 from core import BaseDataSource, BaseModel
 import util.gaze
 
 data_format = "channels_last"  # Change this to "channels_first" to run on GPU
 
-class DenseNet(BaseModel):
+class DenseNetFixed(BaseModel):
     """An implementation of the DenseNet architecture."""
 
     def build_model(self, data_sources: Dict[str, BaseDataSource], mode: str):
@@ -22,6 +25,10 @@ class DenseNet(BaseModel):
         depth = 40
         self.N = int((depth - 4) / 3)
         self.growthRate = 12
+
+        # is_training = (mode == tf.estimator.ModeKeys.TRAIN)
+        is_training = True
+
 
         data_source = next(iter(data_sources.values()))
         input_tensors = data_source.output_tensors
@@ -45,7 +52,7 @@ class DenseNet(BaseModel):
             in_channel = shape[3]
             with tf.variable_scope(name) as scope:
                 #c = BatchNorm('bn1', l)
-                c = tf.layers.batch_normalization(l, name='bn1')
+                c = tf.layers.batch_normalization(l, name='bn1', training=is_training)
                 c = tf.nn.relu(c)
                 c = conv('conv1', c, self.growthRate, 1)
                 l = tf.concat([c, l], 3)
@@ -56,7 +63,7 @@ class DenseNet(BaseModel):
             in_channel = shape[3]
             with tf.variable_scope(name) as scope:
                 #l = BatchNorm('bn1', l)
-                l = tf.layers.batch_normalization(l, name='bn1')
+                l = tf.layers.batch_normalization(l, name='bn1', training=is_training)
                 l = tf.nn.relu(l)
                 #l = Conv2D('conv1', l, in_channel, 1, stride=1, use_bias=False, nl=tf.nn.relu, data_format=data_format)
                 l = tf.layers.conv2d(l, filters=in_channel, strides=1, kernel_size=1, padding='same',
@@ -104,7 +111,7 @@ class DenseNet(BaseModel):
 
             with tf.variable_scope('regression'):
                 #l = BatchNorm('bnlast', l)
-                l = tf.layers.batch_normalization(l, name='bnlast')
+                l = tf.layers.batch_normalization(l, name='bnlast', training=is_training)
                 l = tf.nn.relu(l)
                 l = global_average_pooling(name='gap', x=l, data_format=data_format)
                 #logits = FullyConnected('linear', l, out_dim=2, nl=tf.identity)

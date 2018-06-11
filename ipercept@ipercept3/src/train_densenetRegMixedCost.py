@@ -5,27 +5,18 @@ import argparse
 import coloredlogs
 import tensorflow as tf
 
-from models.densenet_original import DenseNetOriginal
+from models.densenetRegMixedCost import DenseNetRegMixedCost
 
-Model = DenseNetOriginal
+Model = DenseNetRegMixedCost
 
 DEBUG = False
 if DEBUG:
-    NUM_EPOCHS = 6
+    NUM_EPOCHS = 2
 else:
-    NUM_EPOCHS = 20
-    # NUM_EPOCHS = 10
+    NUM_EPOCHS = 50
 
-# 35 epochs with LR=0.1
-# some epochs with LR=0.01.observation: more overfitting. action: reduce batch size to 64, set LR back to 0.1
-# some epochs with BS=64 and LR=0.01
-# at 50 epochs: LR=0.004 and Batch_SIZE=32
-# at 43.5K steps: batch size 128 (because neither train nor test loss changed) -> had to set epochs to 150
-
-LEARNING_RATE = 0.01  # todo: implement dynamic way to divide this after some epochs
-BATCH_SIZE = 64  # original 64 or 256
-
-tf.set_random_seed(5)
+LEARNING_RATE = 0.01
+BATCH_SIZE = 64
 
 if __name__ == '__main__':
 
@@ -69,14 +60,14 @@ if __name__ == '__main__':
             learning_schedule=[
                 {
                     'loss_terms_to_optimize': {
-                        'gaze_mse': ['denseblocks', 'regression'],
+                        'gaze_mixed_error': ['block_initial', 'block1', 'block2', 'block3', 'regression'],
                     },
-                    'metrics': ['gaze_angular'],
+                    'metrics': ['gaze_angular', 'gaze_mse_org'],
                     'learning_rate': LEARNING_RATE,
                 },
             ],
 
-            test_losses_or_metrics=['gaze_mse', 'gaze_angular'],
+            test_losses_or_metrics=['gaze_mixed_error', 'gaze_angular', 'gaze_mse_org'],
 
             # Data sources for training and testing.
             train_data={
@@ -114,3 +105,15 @@ if __name__ == '__main__':
                 testing=True,
             )
         )
+
+        model.evaluate(
+            HDF5Source(
+                session,
+                batch_size,
+                hdf_path='../datasets/MPIIGaze_kaggle_students.h5',
+                keys_to_use=['validation'],
+                testing=True,
+            ),
+            '../explore/densenetregmixedcost_validation_pred.csv'
+        )
+

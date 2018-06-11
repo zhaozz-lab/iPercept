@@ -5,27 +5,22 @@ import argparse
 import coloredlogs
 import tensorflow as tf
 
-from models.densenet_original import DenseNetOriginal
+from models.densenetfixed import DenseNetFixed as Model
 
-Model = DenseNetOriginal
 
 DEBUG = False
 if DEBUG:
-    NUM_EPOCHS = 6
+    NUM_EPOCHS = 2
 else:
-    NUM_EPOCHS = 20
-    # NUM_EPOCHS = 10
+    NUM_EPOCHS = 10
 
-# 35 epochs with LR=0.1
-# some epochs with LR=0.01.observation: more overfitting. action: reduce batch size to 64, set LR back to 0.1
-# some epochs with BS=64 and LR=0.01
-# at 50 epochs: LR=0.004 and Batch_SIZE=32
-# at 43.5K steps: batch size 128 (because neither train nor test loss changed) -> had to set epochs to 150
+LEARNING_RATE = 0.01
+BATCH_SIZE = 64
 
-LEARNING_RATE = 0.01  # todo: implement dynamic way to divide this after some epochs
-BATCH_SIZE = 64  # original 64 or 256
+tf.set_random_seed(1)  # ipercept1
+tf.set_random_seed(2)  # ipercept2
+tf.set_random_seed(3)  # ipercept3
 
-tf.set_random_seed(5)
 
 if __name__ == '__main__':
 
@@ -69,7 +64,7 @@ if __name__ == '__main__':
             learning_schedule=[
                 {
                     'loss_terms_to_optimize': {
-                        'gaze_mse': ['denseblocks', 'regression'],
+                        'gaze_mse': ['block_initial', 'block1', 'block2', 'block3', 'regression'],
                     },
                     'metrics': ['gaze_angular'],
                     'learning_rate': LEARNING_RATE,

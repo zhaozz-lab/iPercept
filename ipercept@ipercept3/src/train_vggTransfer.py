@@ -5,32 +5,21 @@ import argparse
 import coloredlogs
 import tensorflow as tf
 
-from models.densenet_original import DenseNetOriginal
-
-Model = DenseNetOriginal
+from models.vgg16Transfer import vgg16Transfer
 
 DEBUG = False
 if DEBUG:
-    NUM_EPOCHS = 6
+    NUM_EPOCHS = 2
 else:
-    NUM_EPOCHS = 20
-    # NUM_EPOCHS = 10
+    NUM_EPOCHS = 100
 
-# 35 epochs with LR=0.1
-# some epochs with LR=0.01.observation: more overfitting. action: reduce batch size to 64, set LR back to 0.1
-# some epochs with BS=64 and LR=0.01
-# at 50 epochs: LR=0.004 and Batch_SIZE=32
-# at 43.5K steps: batch size 128 (because neither train nor test loss changed) -> had to set epochs to 150
+Model = vgg16Transfer
 
-LEARNING_RATE = 0.01  # todo: implement dynamic way to divide this after some epochs
-BATCH_SIZE = 64  # original 64 or 256
-
-tf.set_random_seed(5)
 
 if __name__ == '__main__':
 
     # Set global log level
-    parser = argparse.ArgumentParser(description='Train a gaze estimation model.')
+    parser = argparse.ArgumentParser(description='vgg16Transfer')
     parser.add_argument('-v', type=str, help='logging level', default='info',
                         choices=['debug', 'info', 'warning', 'error', 'critical'])
     args = parser.parse_args()
@@ -46,11 +35,10 @@ if __name__ == '__main__':
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as session:
 
         # Declare some parameters
-        batch_size = BATCH_SIZE
+        batch_size = 10
 
         # Define model
         from datasources import HDF5Source
-
         model = Model(
             # Tensorflow session
             # Note: The same session must be used for the model and the data sources.
@@ -69,10 +57,10 @@ if __name__ == '__main__':
             learning_schedule=[
                 {
                     'loss_terms_to_optimize': {
-                        'gaze_mse': ['denseblocks', 'regression'],
+                        'gaze_mse': ['conv', 'fc'],
                     },
                     'metrics': ['gaze_angular'],
-                    'learning_rate': LEARNING_RATE,
+                    'learning_rate': 1e-3,
                 },
             ],
 
@@ -98,6 +86,9 @@ if __name__ == '__main__':
                 ),
             },
         )
+        # Load Weights
+        model.load_weights('models/vggExample/vgg16_weights.npz', session)
+
 
         # Train this model for a set number of epochs
         model.train(

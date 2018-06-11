@@ -5,15 +5,15 @@ import argparse
 import coloredlogs
 import tensorflow as tf
 
-from models.densenet_original import DenseNetOriginal
+from models.densenet_original_plus import DenseNetOriginalPlus
 
-Model = DenseNetOriginal
+Model = DenseNetOriginalPlus
 
 DEBUG = False
 if DEBUG:
     NUM_EPOCHS = 6
 else:
-    NUM_EPOCHS = 20
+    NUM_EPOCHS = 250
     # NUM_EPOCHS = 10
 
 # 35 epochs with LR=0.1
@@ -22,8 +22,8 @@ else:
 # at 50 epochs: LR=0.004 and Batch_SIZE=32
 # at 43.5K steps: batch size 128 (because neither train nor test loss changed) -> had to set epochs to 150
 
-LEARNING_RATE = 0.01  # todo: implement dynamic way to divide this after some epochs
-BATCH_SIZE = 64  # original 64 or 256
+LEARNING_RATE = 0.004 #04  # todo: implement dynamic way to divide this after some epochs
+BATCH_SIZE = 128  # original 64 or 256
 
 tf.set_random_seed(5)
 

@@ -3,16 +3,17 @@ from typing import Dict
 
 
 import tensorflow as tf
-#from tensorpack import *
-#from tensorpack.tfutils.symbolic_functions import *
-#from tensorpack.tfutils.summary import *
 
 from core import BaseDataSource, BaseModel
 import util.gaze
+import logging
+
+logger = logging.getLogger(__name__)
 
 data_format = "channels_last"  # Change this to "channels_first" to run on GPU
 
-class DenseNet(BaseModel):
+
+class DenseNetRegMixedCost(BaseModel):
     """An implementation of the DenseNet architecture."""
 
     def build_model(self, data_sources: Dict[str, BaseDataSource], mode: str):
@@ -108,19 +109,32 @@ class DenseNet(BaseModel):
                 l = tf.nn.relu(l)
                 l = global_average_pooling(name='gap', x=l, data_format=data_format)
                 #logits = FullyConnected('linear', l, out_dim=2, nl=tf.identity)
+                l = tf.layers.dense(l, units=1000, name="fc1000", activation=tf.nn.tanh)
+                l = tf.layers.dropout(l, name="dropout")
                 regressed_output = tf.layers.dense(l, units=2, name='fc4', activation=None)
 
             return regressed_output
 
         output = dense_net('dense_net')
 
+        # L2 loss
+        # vars = tf.trainable_variables()
+        #
+        # logger.info(vars)
+
+        # lossL2 = tf.add_n([tf.nn.l2_loss(v) for v in vars
+        #                    if 'bias' not in v.name]) * 0.0001
+
         with tf.variable_scope('mse'):  # To optimize
             loss_terms = {
-                'gaze_mse': tf.reduce_mean(tf.squared_difference(output, y)),
+                'gaze_mixed_error':
+                    tf.reduce_mean(tf.squared_difference(output, y))
+                    + tf.reduce_mean(tf.sqrt(tf.squared_difference(output, y)))
             }
         with tf.variable_scope('ang'):  # To evaluate in addition to loss terms
             metrics = {
                 'gaze_angular': util.gaze.tensorflow_angular_error_from_pitchyaw(output, y),
+                'gaze_mse_org': tf.reduce_mean(tf.squared_difference(output, y))
             }
         return {'gaze': output}, loss_terms, metrics
 

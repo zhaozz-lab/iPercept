@@ -221,14 +221,13 @@ class BaseModel(object):
                         if v.name.startswith(prefix)
                     ]
 
-                # update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-                # with tf.control_dependencies(update_ops):
-                optimize_op = self.get_optimizer(spec).minimize(
-                    loss=self.loss_terms['train'][loss_term_key],
-                    var_list=variables_to_train,
-                    name='optimize_%s' % loss_term_key,
-                )
-
+                update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+                with tf.control_dependencies(update_ops):
+                    optimize_op = self.get_optimizer(spec).minimize(
+                        loss=self.loss_terms['train'][loss_term_key],
+                        var_list=variables_to_train,
+                        name='optimize_%s' % loss_term_key,
+                    )
                 optimize_ops.append(optimize_op)
                 logger.info('Using optimizer: %s' % self.get_optimizer(spec).__class__)
             self._optimize_ops.append(optimize_ops)

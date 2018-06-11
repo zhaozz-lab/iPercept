@@ -5,9 +5,9 @@ import argparse
 import coloredlogs
 import tensorflow as tf
 
-from models.densenet_original import DenseNetOriginal
+from models.densenet_original_light import DenseNetOriginalLight
 
-Model = DenseNetOriginal
+Model = DenseNetOriginalLight
 
 DEBUG = False
 if DEBUG:

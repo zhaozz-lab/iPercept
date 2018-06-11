@@ -9,10 +9,13 @@ import tensorflow as tf
 
 from core import BaseDataSource, BaseModel
 import util.gaze
+import logging
+
+logger = logging.getLogger(__name__)
 
 data_format = "channels_last"  # Change this to "channels_first" to run on GPU
 
-class DenseNet(BaseModel):
+class DenseNetL2(BaseModel):
     """An implementation of the DenseNet architecture."""
 
     def build_model(self, data_sources: Dict[str, BaseDataSource], mode: str):
@@ -114,9 +117,18 @@ class DenseNet(BaseModel):
 
         output = dense_net('dense_net')
 
+        # L2 loss
+        vars = tf.trainable_variables()
+
+        logger.info(vars)
+
+        lossL2 = tf.add_n([tf.nn.l2_loss(v) for v in vars
+                           if 'bias' not in v.name]) * 0.0001
+
         with tf.variable_scope('mse'):  # To optimize
             loss_terms = {
-                'gaze_mse': tf.reduce_mean(tf.squared_difference(output, y)),
+                'gaze_mse':
+                    tf.reduce_mean(tf.squared_difference(output, y)) + lossL2,
             }
         with tf.variable_scope('ang'):  # To evaluate in addition to loss terms
             metrics = {
