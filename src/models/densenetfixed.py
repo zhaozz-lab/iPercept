@@ -12,11 +12,19 @@ import tensorflow as tf
 
 from core import BaseDataSource, BaseModel
 import util.gaze
+import time
 
 data_format = "channels_last"  # Change this to "channels_first" to run on GPU
 
+
 class DenseNetFixed(BaseModel):
     """An implementation of the DenseNet architecture."""
+
+    model_identifier = "DenseNetFixed_{}".format(int(time.time()))
+
+    def get_identifier(self):
+        # e.g. DenseNetFixed_RS1
+        return self.model_identifier
 
     def build_model(self, data_sources: Dict[str, BaseDataSource], mode: str):
         """Build model."""
