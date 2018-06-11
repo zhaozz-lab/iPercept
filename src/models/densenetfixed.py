@@ -22,10 +22,6 @@ class DenseNetFixed(BaseModel):
 
     model_identifier = "DenseNetFixed_{}".format(int(time.time()))
 
-    def update_learning_rate(self, learning_rate):
-        self._learning_schedule['learning_rate'] = learning_rate
-        self._build_optimizers()
-
     def get_identifier(self):
         # e.g. DenseNetFixed_RS1
         return self.model_identifier
@@ -39,6 +35,7 @@ class DenseNetFixed(BaseModel):
         self.growthRate = 12
 
         # is_training = "train" == tf.estimator.ModeKeys.TRAIN
+        # Test predictions only work if this is always true
         is_training = True
 
         data_source = next(iter(data_sources.values()))
@@ -47,22 +44,12 @@ class DenseNetFixed(BaseModel):
         y = input_tensors['gaze']
 
         def conv(name, l, channel, stride):
-            # added data_format (from examplenet)
-            #output= Conv2D(name, l, channel, 3, stride=stride,
-            #              nl=tf.identity, use_bias=False,
-            #              W_init=tf.random_normal_initializer(stddev=np.sqrt(2.0 / 9 / channel)),
-            #              data_format=data_format)
-
-            output=tf.layers.conv2d(l, filters=channel, kernel_size=3, strides=stride,
+            return tf.layers.conv2d(l, filters=channel, kernel_size=3, strides=stride,
                                      padding='same', name=name, data_format=data_format)
-
-            return output
 
         def add_layer(name, l):
             shape = l.get_shape().as_list()
-            in_channel = shape[3]
-            with tf.variable_scope(name) as scope:
-                #c = BatchNorm('bn1', l)
+            with tf.variable_scope(name):
                 c = tf.layers.batch_normalization(l, name='bn1', training=is_training)
                 c = tf.nn.relu(c)
                 c = conv('conv1', c, self.growthRate, 1)
@@ -72,11 +59,9 @@ class DenseNetFixed(BaseModel):
         def add_transition(name, l):
             shape = l.get_shape().as_list()
             in_channel = shape[3]
-            with tf.variable_scope(name) as scope:
-                #l = BatchNorm('bn1', l)
+            with tf.variable_scope(name):
                 l = tf.layers.batch_normalization(l, name='bn1', training=is_training)
                 l = tf.nn.relu(l)
-                #l = Conv2D('conv1', l, in_channel, 1, stride=1, use_bias=False, nl=tf.nn.relu, data_format=data_format)
                 l = tf.layers.conv2d(l, filters=in_channel, strides=1, kernel_size=1, padding='same',
                                      data_format=data_format, name='conv1')
                 l = tf.nn.relu(l)
@@ -121,11 +106,9 @@ class DenseNetFixed(BaseModel):
                     l = add_layer('dense_layer.{}'.format(i), l)
 
             with tf.variable_scope('regression'):
-                #l = BatchNorm('bnlast', l)
                 l = tf.layers.batch_normalization(l, name='bnlast', training=is_training)
                 l = tf.nn.relu(l)
                 l = global_average_pooling(name='gap', x=l, data_format=data_format)
-                #logits = FullyConnected('linear', l, out_dim=2, nl=tf.identity)
                 regressed_output = tf.layers.dense(l, units=2, name='fc4', activation=None)
 
             return regressed_output

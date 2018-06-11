@@ -19,10 +19,6 @@ class TestNet(BaseModel):
 
     model_identifier = "TestDenseNetFixed_{}".format(int(time.time()))
 
-    def update_learning_rate(self, learning_rate):
-        self._learning_schedule[0]['learning_rate'] = learning_rate
-        self._build_optimizers()
-
     def get_identifier(self):
         # e.g. DenseNetFixed_RS1
         return self.model_identifier
