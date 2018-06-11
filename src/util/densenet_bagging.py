@@ -24,7 +24,6 @@ def get_latest_submission(folder):
 def get_files(base_path, prefix):
     all_folders = os.listdir(os.path.join(base_path))
     target_folders = [f for f in all_folders if f.startswith(prefix)]
-    print(target_folders)
     return [os.path.join(os.path.join(base_path, folder),
             get_latest_submission(os.path.join(base_path, folder))) for folder in target_folders]
 
@@ -53,5 +52,5 @@ df_result = pd.DataFrame(
 )
 
 df_result.index.name = 'Id'
-# df_result.to_csv(path_out)
+df_result.to_csv(path_out)
 print(df_result.describe())
