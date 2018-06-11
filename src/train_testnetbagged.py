@@ -5,7 +5,7 @@ import argparse
 import coloredlogs
 import tensorflow as tf
 
-from models.densenetfixed import DenseNetFixed as Model
+from models.testnet import TestNet as Model
 import time
 from datasources import HDF5Source
 import logging
@@ -19,7 +19,7 @@ def get_model(session, learning_rate, identifier):
         learning_schedule=[
             {
                 'loss_terms_to_optimize': {
-                    'gaze_mse': ['block_initial', 'block1', 'block2', 'block3', 'regression'],
+                    'gaze_mse': ['testscope'],
                 },
                 'metrics': ['gaze_angular'],
                 'learning_rate': learning_rate,
@@ -51,6 +51,8 @@ def get_model(session, learning_rate, identifier):
     return model
 
 
+
+
 if __name__ == '__main__':
 
     # Set global log level
@@ -69,23 +71,35 @@ if __name__ == '__main__':
     # Initialize Tensorflow session
     tf.logging.set_verbosity(tf.logging.INFO)
     gpu_options = tf.GPUOptions(allow_growth=True)
-    with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as session:
-        # Declare some parameters
-        batch_size = 64
-        B = args.B
-        B_start = args.B_start
-        logger.info("Training models {} to {}...".format(B_start, B))
 
-        for b in range(B_start, B):
+    # Declare some parameters
+    batch_size = 64
+    B = args.B
+    B_start = args.B_start
+    logger.info("Training models {}, ... , {}".format(B_start, B-1))
+
+    for b in range(B_start, B):
+        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as session:
+
+            learning_rate = tf.Variable(initial_value=0.01, trainable=False, name="learning_rate")
+
+            logger.info("Training model with index b={}".format(b))
+
             tf.set_random_seed(b)
-            model_identifier = "DenseNetBagged_RS{}_{}".format(b, int(time.time()))
-            model = get_model(session, 0.01, model_identifier)
+
+            model_identifier = "TestNetBagged_RS{}_{}".format(str(b).zfill(3), int(time.time()))
+
+            model = get_model(session, learning_rate, model_identifier)
+
             model.train(num_epochs=.3)
-            model.update_learning_rate(0.001)
-            # Train this model for a set number of epochs
+
+            assign_op = learning_rate.assign(0.001)
+            session.run(assign_op)
             model.train(num_epochs=.3)
-            model.update_learning_rate(0.0001)
-            model.train(num_epochs=1)
+
+            assign_op = learning_rate.assign(0.0001)
+            session.run(assign_op)
+            model.train(num_epochs=.3)
 
 
             # Evaluate for Kaggle submission
@@ -98,3 +112,4 @@ if __name__ == '__main__':
                     testing=True,
                 )
             )
+        tf.reset_default_graph()

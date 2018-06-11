@@ -9,12 +9,23 @@ import tensorflow as tf
 
 from core import BaseDataSource, BaseModel
 import util.gaze
+import time
 
 data_format = "channels_last"  # Change this to "channels_first" to run on GPU
 
 
 class TestNet(BaseModel):
     """An implementation of the DenseNet architecture."""
+
+    model_identifier = "TestDenseNetFixed_{}".format(int(time.time()))
+
+    def update_learning_rate(self, learning_rate):
+        self._learning_schedule[0]['learning_rate'] = learning_rate
+        self._build_optimizers()
+
+    def get_identifier(self):
+        # e.g. DenseNetFixed_RS1
+        return self.model_identifier
 
     def build_model(self, data_sources: Dict[str, BaseDataSource], mode: str):
         """Build model."""
@@ -24,7 +35,7 @@ class TestNet(BaseModel):
         x = input_tensors['eye']
         y = input_tensors['gaze']
 
-        with tf.variable_scope('testscope'):
+        with tf.variable_scope('testscope', reuse=tf.AUTO_REUSE):
 
             x = tf.layers.conv2d(x, filters=10, kernel_size=3, strides=1,
                              padding='same', data_format=data_format)

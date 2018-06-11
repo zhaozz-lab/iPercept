@@ -193,6 +193,7 @@ class BaseModel(object):
         self._initialized = True
 
     def get_optimizer(self, spec):
+        logger.info("Optimizer Learning rate: {}".format(spec['learning_rate']))
         # changed 15.5.18, marcel
         return tf.train.AdamOptimizer(
         learning_rate = spec['learning_rate'],
@@ -240,7 +241,9 @@ class BaseModel(object):
         if num_steps is None:
             num_entries = np.min([s.num_entries for s in list(self._train_data.values())])
             num_steps = int(num_epochs * num_entries / self._batch_size)
+        logger.info("Initializng again")
         self.initialize_if_not(training=True)
+        logger.info("initialized")
 
         initial_step = self.checkpoint.load_all()
         current_step = initial_step

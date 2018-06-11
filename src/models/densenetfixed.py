@@ -22,6 +22,10 @@ class DenseNetFixed(BaseModel):
 
     model_identifier = "DenseNetFixed_{}".format(int(time.time()))
 
+    def update_learning_rate(self, learning_rate):
+        self._learning_schedule['learning_rate'] = learning_rate
+        self._build_optimizers()
+
     def get_identifier(self):
         # e.g. DenseNetFixed_RS1
         return self.model_identifier
@@ -36,7 +40,6 @@ class DenseNetFixed(BaseModel):
 
         # is_training = "train" == tf.estimator.ModeKeys.TRAIN
         is_training = True
-
 
         data_source = next(iter(data_sources.values()))
         input_tensors = data_source.output_tensors
