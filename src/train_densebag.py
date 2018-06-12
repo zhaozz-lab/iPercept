@@ -34,7 +34,8 @@ def get_model(session, learning_rate, identifier, random_seed):
                 hdf_path='../datasets/MPIIGaze_kaggle_students.h5',
                 keys_to_use=['train', 'validation'],
                 min_after_dequeue=100,
-                random_seed=random_seed
+                random_seed=random_seed,
+                model_identifier=model_identifier
             ),
         },
         test_data={}, # we don't use a validation set any more
@@ -89,7 +90,7 @@ if __name__ == '__main__':
             # This is the name of the folder where we store our results (weights and predictions)
             model_identifier = "DenseBag_RS{}_{}".format(str(b).zfill(3), int(time.time()))
 
-            model = get_model(session, learning_rate, model_identifier, )
+            model = get_model(session, learning_rate, random_seed=b, identifier=model_identifier)
             # Train the model for 10 epochs using the initial learning rate
             model.train(num_epochs=10)
 

@@ -6,49 +6,17 @@ import cv2 as cv
 import h5py
 import numpy as np
 import tensorflow as tf
-
+import os
 from core.data_source import  BaseDataSource
 
 import logging
+import pandas as pd
+
+
 logger = logging.getLogger(__name__)
 
 
-class HDF5Source(BaseDataSource):
-    """HDF5 data loading class (using h5py)."""
-
-    def __init__(self,
-                 tensorflow_session: tf.Session,
-                 batch_size: int,
-                 keys_to_use: List[str],
-                 hdf_path: str,
-                 testing=False,
-                 **kwargs):
-        """Create queues and threads to read and preprocess data from specified keys."""
-        hdf5 = h5py.File(hdf_path, 'r')
-        self._short_name = 'HDF:%s' % '/'.join(hdf_path.split('/')[-2:])
-        if testing:
-            self._short_name += ':test'
-
-        # Create global index over all specified keys
-        self._index_to_key = {}
-        index_counter = 0
-        for key in keys_to_use:
-            n = hdf5[key]['eye'].shape[0]
-            logger.info("number of eyes: {}".format(n))
-            for i in range(n):
-                self._index_to_key[index_counter] = (key, i)
-                index_counter += 1
-        self._num_entries = index_counter
-
-        self._hdf5 = hdf5
-        self._mutex = Lock()
-        self._current_index = 0
-        super().__init__(tensorflow_session, batch_size, testing=testing, **kwargs)
-
-        # Set index to 0 again as base class constructor called HDF5Source::entry_generator once to
-        # get preprocessed sample.
-        self._current_index = 0
-
+class BaseHDF5Source(BaseDataSource):
     @property
     def num_entries(self):
         """Number of entries in this data source."""
@@ -112,6 +80,43 @@ class HDF5Source(BaseDataSource):
         return entry
 
 
+class HDF5Source(BaseHDF5Source):
+    """HDF5 data loading class (using h5py)."""
+    def __init__(self,
+                 tensorflow_session: tf.Session,
+                 batch_size: int,
+                 keys_to_use: List[str],
+                 hdf_path: str,
+                 testing=False,
+                 **kwargs):
+        """Create queues and threads to read and preprocess data from specified keys."""
+        hdf5 = h5py.File(hdf_path, 'r')
+        self._short_name = 'HDF:%s' % '/'.join(hdf_path.split('/')[-2:])
+        if testing:
+            self._short_name += ':test'
+
+        # Create global index over all specified keys
+        self._index_to_key = {}
+        index_counter = 0
+        for key in keys_to_use:
+            n = hdf5[key]['eye'].shape[0]
+            logger.info("number of eyes: {}".format(n))
+            for i in range(n):
+                self._index_to_key[index_counter] = (key, i)
+                index_counter += 1
+        self._num_entries = index_counter
+
+        self._hdf5 = hdf5
+        self._mutex = Lock()
+        self._current_index = 0
+        super().__init__(tensorflow_session, batch_size, testing=testing, **kwargs)
+
+        # Set index to 0 again as base class constructor called HDF5Source::entry_generator once to
+        # get preprocessed sample.
+        self._current_index = 0
+
+
+
 class HDF5SourceRaw(HDF5Source):
 
     def preprocess_entry(self, entry):
@@ -121,7 +126,7 @@ class HDF5SourceRaw(HDF5Source):
         return entry
 
 
-class BootstrappedHDF5Source(HDF5Source):
+class BootstrappedHDF5Source(BaseHDF5Source):
     """HDF5 data loading class (using h5py)."""
 
     def __init__(self,
@@ -130,6 +135,7 @@ class BootstrappedHDF5Source(HDF5Source):
                  keys_to_use: List[str],
                  hdf_path: str,
                  random_seed: int,
+                 model_identifier: str,
                  testing=False,
                  **kwargs):
         """Create queues and threads to read and preprocess data from specified keys.
@@ -149,10 +155,13 @@ class BootstrappedHDF5Source(HDF5Source):
             n = hdf5[key]['eye'].shape[0]
             logger.info("number of eyes: {}".format(n))
             bootstrapped_indices = list(np.random.randint(0, n, n))
-            logger.info("bootstrapped indices: {}".format(", ".join([str(e) for e in bootstrapped_indices])))
+            logger.info("Bootstrapped {} indices".format(n))
             for i in bootstrapped_indices:
                 self._index_to_key[index_counter] = (key, i)
                 index_counter += 1
+        # Keep track of training indices (use for out-of-bag-error calculation)
+        self.persist_indices(self._index_to_key, model_identifier)
+
         self._num_entries = index_counter
 
         self._hdf5 = hdf5
@@ -163,4 +172,29 @@ class BootstrappedHDF5Source(HDF5Source):
         # Set index to 0 again as base class constructor called HDF5Source::entry_generator once to
         # get preprocessed sample.
         self._current_index = 0
+
+    def persist_indices(self, index_to_key_dict: dict, model_identifier):
+        """
+        Writes the index_to_key_dict to a csv file. Creates a folder in .../outputs/ called model_identifier. In that
+        folder a csv file called "train_indices.csv" will contain the index_to_key_dict.
+        :param index_to_key_dict: self._index_to_key
+        :param model_identifier: e.g. DenseBag_RS009_123451234
+        :return: None
+        """
+        logger.info("Storing training indices")
+
+        # dicts are not sorted. We now sort it to make sure to keep the correct pairs.
+        keys_sorted = sorted(index_to_key_dict.keys())
+        # keys is either "train" or "validation"
+        keys = [index_to_key_dict[i][0] for i in range(len(keys_sorted))]
+        # index of the example in the dataset
+        index = [index_to_key_dict[i][1] for i in range(len(keys_sorted))]
+        df = pd.DataFrame(data={'key': keys, 'index': index}, index=keys_sorted)
+
+        # We call this script from the folder .../src/
+        outputs_path = '../outputs/{}/'.format(model_identifier)
+        # The folder doesn't exist yet because we have not started training.
+        os.mkdir(outputs_path)
+        path_out = os.path.join(outputs_path, 'train_indices.csv'.format(model_identifier, model_identifier))
+        df.to_csv(path_out)
 
