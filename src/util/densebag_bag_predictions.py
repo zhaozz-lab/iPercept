@@ -5,9 +5,6 @@ import os
 import time
 import re
 
-base_path = "../../outputs/DenseNetBagged/"
-path_out = os.path.join(base_path, "to_submit_to_kaggle_{}.csv".format(int(time.time())))
-
 
 def get_latest_submission(folder):
     all_files = os.listdir(folder)
@@ -38,7 +35,9 @@ def get_average(list_df, column):
     return np.mean(df_all, axis=1)
 
 
-prefix = "DenseNetBagged_RS"
+base_path = "../../outputs/DenseBag/"
+path_out = os.path.join(base_path, "to_submit_to_kaggle_{}.csv".format(int(time.time())))
+prefix = "DenseBag_RS"
 files = get_files(base_path, prefix)
 
 
