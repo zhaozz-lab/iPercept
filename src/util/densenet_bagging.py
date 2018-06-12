@@ -5,9 +5,8 @@ import os
 import time
 import re
 
-base_path = "../../outputs/"
-path_out = os.path.join(base_path, "DenseNetFixedBagged")
-path_out = os.path.join(path_out, "to_submit_to_kaggle_{}.csv".format(int(time.time())))
+base_path = "../../outputs/DenseNetBagged/"
+path_out = os.path.join(base_path, "to_submit_to_kaggle_{}.csv".format(int(time.time())))
 
 
 def get_latest_submission(folder):
@@ -18,6 +17,7 @@ def get_latest_submission(folder):
         result = re.sub('[^0-9]', '', filename)
         return int(result)
     target_files_sorted = sorted(target_files, key=lambda a: extract_timestamp(a))
+    print(folder, target_files_sorted)
     return target_files_sorted[-1]
 
 
@@ -38,7 +38,7 @@ def get_average(list_df, column):
     return np.mean(df_all, axis=1)
 
 
-prefix = "DenseNetFixed_RS"
+prefix = "DenseNetBagged_RS"
 files = get_files(base_path, prefix)
 
 

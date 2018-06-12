@@ -1,19 +1,11 @@
 """DenseNet architecture."""
+import time
 from typing import Dict
-
 
 import tensorflow as tf
 
-#from tensorpack import *
-#from tensorpack.tfutils.symbolic_functions import *
-#from tensorpack.tfutils.summary import *
-
-
-
-from core import BaseDataSource, BaseModel
 import util.gaze
-import time
-
+from core import BaseDataSource, BaseModel
 data_format = "channels_last"  # Change this to "channels_first" to run on GPU
 
 
@@ -34,8 +26,7 @@ class DenseNetFixed(BaseModel):
         self.N = int((depth - 4) / 3)
         self.growthRate = 12
 
-        # is_training = "train" == tf.estimator.ModeKeys.TRAIN
-        # Test predictions only work if this is always true
+        # Test predictions only work if this is always true. TODO: find bug
         is_training = True
 
         data_source = next(iter(data_sources.values()))
@@ -45,7 +36,7 @@ class DenseNetFixed(BaseModel):
 
         def conv(name, l, channel, stride):
             return tf.layers.conv2d(l, filters=channel, kernel_size=3, strides=stride,
-                                     padding='same', name=name, data_format=data_format)
+                                    padding='same', name=name, data_format=data_format)
 
         def add_layer(name, l):
             shape = l.get_shape().as_list()
@@ -65,7 +56,6 @@ class DenseNetFixed(BaseModel):
                 l = tf.layers.conv2d(l, filters=in_channel, strides=1, kernel_size=1, padding='same',
                                      data_format=data_format, name='conv1')
                 l = tf.nn.relu(l)
-                # changed from tensorpack
                 layer = tf.layers.AveragePooling2D(name='pool', padding='same', strides=2,
                                                    pool_size=2, data_format=data_format)
                 l = layer.apply(l, scope=tf.get_variable_scope())
@@ -84,23 +74,23 @@ class DenseNetFixed(BaseModel):
             axis = [1, 2] if data_format == 'channels_last' else [2, 3]
             return tf.reduce_mean(x, axis, name=name)
 
-        def dense_net(name):
+        def dense_net():
             with tf.variable_scope('block_initial'):
                 l = conv('conv0', x, 16, 1)
 
-            with tf.variable_scope('block1') as scope:
+            with tf.variable_scope('block1'):
 
                 for i in range(self.N):
                     l = add_layer('dense_layer.{}'.format(i), l)
                 l = add_transition('transition1', l)
 
-            with tf.variable_scope('block2') as scope:
+            with tf.variable_scope('block2'):
 
                 for i in range(self.N):
                     l = add_layer('dense_layer.{}'.format(i), l)
                 l = add_transition('transition2', l)
 
-            with tf.variable_scope('block3') as scope:
+            with tf.variable_scope('block3'):
 
                 for i in range(self.N):
                     l = add_layer('dense_layer.{}'.format(i), l)
@@ -113,7 +103,7 @@ class DenseNetFixed(BaseModel):
 
             return regressed_output
 
-        output = dense_net('dense_net')
+        output = dense_net()
 
         with tf.variable_scope('mse'):  # To optimize
             loss_terms = {
@@ -124,5 +114,3 @@ class DenseNetFixed(BaseModel):
                 'gaze_angular': util.gaze.tensorflow_angular_error_from_pitchyaw(output, y),
             }
         return {'gaze': output}, loss_terms, metrics
-
-
