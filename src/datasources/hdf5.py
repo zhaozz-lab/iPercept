@@ -119,3 +119,48 @@ class HDF5SourceRaw(HDF5Source):
         entry['eye'] = entry['eye'].astype(np.float32)
         entry['gaze'] = entry['gaze'].astype(np.float32)
         return entry
+
+
+class BootstrappedHDF5Source(HDF5Source):
+    """HDF5 data loading class (using h5py)."""
+
+    def __init__(self,
+                 tensorflow_session: tf.Session,
+                 batch_size: int,
+                 keys_to_use: List[str],
+                 hdf_path: str,
+                 random_seed: int,
+                 testing=False,
+                 **kwargs):
+        """Create queues and threads to read and preprocess data from specified keys.
+        This is nearly the same __init__() as in HDF5Source. The only change is how i in range(n) is sampled."""
+        hdf5 = h5py.File(hdf_path, 'r')
+        self._short_name = 'HDF:%s' % '/'.join(hdf_path.split('/')[-2:])
+        if testing:
+            self._short_name += ':test'
+
+        # set the random seed for reproduceability
+        np.random.seed(random_seed)
+
+        # Create global index over all specified keys
+        self._index_to_key = {}
+        index_counter = 0
+        for key in keys_to_use:
+            n = hdf5[key]['eye'].shape[0]
+            logger.info("number of eyes: {}".format(n))
+            bootstrapped_indices = list(np.random.randint(0, n, n))
+            logger.info("bootstrapped indices: {}".format(", ".join([str(e) for e in bootstrapped_indices])))
+            for i in bootstrapped_indices:
+                self._index_to_key[index_counter] = (key, i)
+                index_counter += 1
+        self._num_entries = index_counter
+
+        self._hdf5 = hdf5
+        self._mutex = Lock()
+        self._current_index = 0
+        super().__init__(tensorflow_session, batch_size, testing=testing, **kwargs)
+
+        # Set index to 0 again as base class constructor called HDF5Source::entry_generator once to
+        # get preprocessed sample.
+        self._current_index = 0
+
