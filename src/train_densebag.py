@@ -32,6 +32,7 @@ def get_model(session, learning_rate, identifier, random_seed):
                 session,
                 batch_size,
                 hdf_path='../datasets/MPIIGaze_kaggle_students.h5',
+                # We use bootstrapping to sample from both training and validation set.
                 keys_to_use=['train', 'validation'],
                 min_after_dequeue=100,
                 random_seed=random_seed,
@@ -112,6 +113,7 @@ if __name__ == '__main__':
                     testing=True,
                 )
             )
+        # We need to reset the default_graph such that we can train new models that use the same variable names.
         tf.reset_default_graph()
 
 

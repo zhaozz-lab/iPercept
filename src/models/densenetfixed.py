@@ -24,9 +24,10 @@ class DenseNetFixed(BaseModel):
         # Hardcoded for now
         depth = 40
         self.N = int((depth - 4) / 3)
-        self.growthRate = 12
+        self.growth_rate = 12
 
         # Test predictions only work if this is always true. TODO: find bug
+        # It is ok to set this to True. See https://piazza.com/class/jdbpmonr7fa26b?cid=105
         is_training = True
 
         data_source = next(iter(data_sources.values()))
@@ -43,7 +44,7 @@ class DenseNetFixed(BaseModel):
             with tf.variable_scope(name):
                 c = tf.layers.batch_normalization(l, name='bn1', training=is_training)
                 c = tf.nn.relu(c)
-                c = conv('conv1', c, self.growthRate, 1)
+                c = conv('conv1', c, self.growth_rate, 1)
                 l = tf.concat([c, l], 3)
             return l
 
