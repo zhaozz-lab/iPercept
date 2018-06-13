@@ -1,4 +1,4 @@
 """Data-source definitions (one class per file)."""
-from .hdf5 import HDF5Source, BootstrappedHDF5Source
+from .hdf5 import HDF5Source, BootstrappedHDF5Source, ValidationSetHDF5Source
 from .unityeyes import UnityEyes
-__all__ = ('HDF5Source', 'UnityEyes', 'BootstrappedHDF5Source')
+__all__ = ('HDF5Source', 'UnityEyes', 'BootstrappedHDF5Source', "ValidationSetHDF5Source")

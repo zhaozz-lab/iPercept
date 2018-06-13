@@ -390,3 +390,49 @@ class BaseModel(object):
         final_output.index.name = 'Id'
         final_output.to_csv(path_out)
         logger.info('Written to file  %s' % os.path.relpath(path_out))
+
+    def evaluate_validationset(self, data_source):
+        """Evaluate on given data for Kaggle submission."""
+        self.initialize_if_not()
+        first_training_data_source = next(iter(self._train_data.values()))
+        input_tensors = first_training_data_source.output_tensors
+
+        predictions = []
+
+        read_entry = data_source.entry_generator()
+        num_entries = data_source.num_entries
+        batch_size = data_source.batch_size
+        num_batches = int(np.ceil(num_entries / batch_size))
+
+        logger.info('Evaluating %d batches...' % num_batches)
+        for i in range(num_batches):
+            a = i * batch_size
+            z = min(a + batch_size, num_entries)
+            current_batch_size = z - a
+            eyes_batch = []
+            heads_batch = []
+            for _ in range(current_batch_size):
+                preprocess_out = data_source.preprocess_entry(next(read_entry))
+                eyes_batch.append(preprocess_out['eye'])
+                heads_batch.append(preprocess_out['head'])
+            if current_batch_size < batch_size:
+                difference = batch_size - current_batch_size
+                eyes_batch = np.pad(eyes_batch, pad_width=[(0, difference), (0, 0), (0, 0), (0, 0)],
+                                    mode='constant', constant_values=0.0)
+                heads_batch = np.pad(heads_batch, pad_width=[(0, difference), (0, 0)],
+                                     mode='constant', constant_values=0.0)
+            gazes_batch = self._tensorflow_session.run(
+                self.output_tensors['train']['gaze'],
+                feed_dict={
+                    input_tensors['eye']: np.asarray(eyes_batch),
+                    input_tensors['head']: np.asarray(heads_batch),
+                    self.is_training: False,
+                    self.use_batch_statistics: True,
+                },
+            )[:current_batch_size, :]
+            predictions += list(gazes_batch)
+
+        final_output = pd.DataFrame(predictions, columns=['pitch', 'yaw'])
+        final_output.index.name = 'Id'
+        return final_output
+
