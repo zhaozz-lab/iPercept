@@ -209,11 +209,6 @@ class BaseModel(object):
         self._optimize_ops = []
         all_trainable_variables = tf.trainable_variables()
 
-        total_parameters = 0
-        for variable in all_trainable_variables:
-            total_parameters += 1
-        logger.info("Number of trainable variables: {}".format(total_parameters))
-
         for spec in self._learning_schedule:
             optimize_ops = []
             loss_terms = spec['loss_terms_to_optimize']
@@ -240,6 +235,8 @@ class BaseModel(object):
             self._optimize_ops.append(optimize_ops)
 
             logger.info('Built optimizer for: %s' % ', '.join(loss_terms.keys()))
+        all_variables_to_train = np.sum([np.product([xi.value for xi in x.get_shape()]) for x in tf.trainable_variables()])
+        logger.info("Number of trainable variables: {}".format(all_variables_to_train))
 
     def train(self, num_epochs=None, num_steps=None):
         """Train model as requested."""
