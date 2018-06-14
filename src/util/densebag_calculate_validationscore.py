@@ -3,6 +3,9 @@
 import argparse
 
 import coloredlogs
+import os
+
+import re
 import tensorflow as tf
 
 from models.densenetfixed import DenseNetFixed as Model
@@ -48,13 +51,18 @@ def update_learning_rate(session, learning_rate_variable, new_learning_rate):
     session.run(assign_op)
 
 
+def get_trained_model_identifiers(path, prefix="DenseBag_RS"):
+    model_folders = [f for f in os.listdir(path) if f.startswith(prefix)]
+    return model_folders
+
+
 if __name__ == '__main__':
     # Set global log level
     parser = argparse.ArgumentParser(description='Train a gaze estimation model.')
     parser.add_argument('-v', type=str, help='logging level', default='info',
                         choices=['debug', 'info', 'warning', 'error', 'critical'])
-    parser.add_argument('-B', type=int, help='number of models to train', default=3)
-    parser.add_argument('-B_start', type=int, help='Start training from model with index B (e.g. use B=3 if you have already trained three models, i.e. models 0,1 and 2).', default=0)
+    parser.add_argument('-i', type=int, help='until model index i', default=3)
+    parser.add_argument('-i_start', type=int, help='Validate from model index (e.g. use i_start=5 if you want to start with model 005).', default=0)
     args = parser.parse_args()
     coloredlogs.install(
         datefmt='%d/%m %H:%M',
@@ -68,38 +76,50 @@ if __name__ == '__main__':
 
     # Declare some parameters
     batch_size = 64
-    B = args.B
-    B_start = args.B_start
-    if B_start >= B:
-        logger.warning("B_start must be smaller than B. B_start={} is not smaller than B={}!".format(B_start, B))
+    to_index = args.i
+    from_index = args.i_start
+    if from_index >= to_index:
+        logger.warning("B_start must be smaller than B. B_start={} is not smaller than B={}!".format(from_index, to_index))
         exit()
 
-    logger.info("Evaluating models {}, ... , {}".format(B_start, B-1))
+    trained_model_identifiers = get_trained_model_identifiers("../outputs/")
+    trained_model_identifiers = sorted(trained_model_identifiers, key=lambda identifier: int(re.sub("[^0-9]", "", identifier)[:3]))
 
-    B_start = 0
-    B = 1
-    for b in range(B_start, B):
-        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as session:
-            # This is the name of the folder where we store our results (weights and predictions)
-            model_identifier = "DenseBag_RS000_1528804911"
-            model = get_model(session, 0.01, random_seed=b, identifier=model_identifier)
+    logger.info("Evaluating models {}".format(", ".join(trained_model_identifiers)))
+    for i, model_identifier in enumerate(trained_model_identifiers):
+        logger.info("Evaluating model {}/{} (identifier: {})".format(i, len(trained_model_identifiers), model_identifier))
 
-            path_out = "../outputs/DenseBag/{}/pred_validation.csv"
+        path_out = '../outputs/{}/validation_predictions.csv'.format(model_identifier)
+        if not os.path.exists(path_out):
 
-            # Evaluate for Kaggle submission
-            pred_validationsset = model.evaluate_validationset(
-                ValidationSetHDF5Source(
-                    session,
-                    batch_size,
-                    hdf_path='../datasets/MPIIGaze_kaggle_students.h5',
-                    keys_to_use=['train', 'validation'],
-                    testing=True,
-                    model_identifier=model_identifier
+            with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as session:
+                # This is the name of the folder where we store our results (weights and predictions)
+                # model_identifier = "DenseBag_RS026_1528958733"
+
+                model = get_model(session, 0.01, random_seed=1, identifier=model_identifier)
+
+                # path_out = "../outputs/DenseBag/{}/pred_validation.csv"
+
+                # this will load the saved weights
+                model.train(num_epochs=0)
+
+                # Evaluate for Kaggle submission
+                pred_validationsset = model.evaluate_validationset(
+                    ValidationSetHDF5Source(
+                        session,
+                        batch_size,
+                        hdf_path='../datasets/MPIIGaze_kaggle_students.h5',
+                        keys_to_use=['train', 'validation'],
+                        testing=True,
+                        model_identifier=model_identifier
+                    )
                 )
-            )
-            print(pred_validationsset.head())
-        # We need to reset the default_graph such that we can train new models that use the same variable names.
-        tf.reset_default_graph()
+            # We need to reset the default_graph such that we can train new models that use the same variable names.
+            tf.reset_default_graph()
+            # break
+
+        else:
+            logger.info("Already done: "+model_identifier)
 
 
 

@@ -436,5 +436,6 @@ class BaseModel(object):
 
         final_output = pd.DataFrame(predictions, columns=['pitch', 'yaw'])
         final_output.index.name = 'Id'
-        return final_output
+        path = '../outputs/{}/validation_predictions.csv'.format(self.get_identifier())
+        final_output.to_csv(path)
 

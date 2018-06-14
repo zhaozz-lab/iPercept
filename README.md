@@ -1,4 +1,9 @@
-# Setup
+# Bugs
+
+We trained the model on the Azure Ubuntu Data Science Machine. Training a single model took between 30 and 40 minutes.
+
+We noted that when training several models using train_densebag.py the machine stops after training 5 models. Restarting the script works well (don't forget to change the parameters B and B_start in order not to use the same random seed again).
+We did not look into this issue.
 
 
 

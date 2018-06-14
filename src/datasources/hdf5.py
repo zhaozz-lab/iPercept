@@ -79,6 +79,31 @@ class BaseHDF5Source(BaseDataSource):
 
         return entry
 
+    def persist_indices(self, index_to_key_dict: dict, model_identifier, filename_out):
+        """
+        Writes the index_to_key_dict to a csv file. Creates a folder in .../outputs/ called model_identifier. In that
+        folder a csv file called "train_indices.csv" will contain the index_to_key_dict.
+        :param index_to_key_dict: self._index_to_key
+        :param model_identifier: e.g. DenseBag_RS009_123451234
+        :return: None
+        """
+        logger.info("Storing training indices")
+
+        # dicts are not sorted. We now sort it to make sure to keep the correct pairs.
+        keys_sorted = sorted(index_to_key_dict.keys())
+        # keys is either "train" or "validation"
+        keys = [index_to_key_dict[i][0] for i in range(len(keys_sorted))]
+        # index of the example in the dataset
+        index = [index_to_key_dict[i][1] for i in range(len(keys_sorted))]
+        df = pd.DataFrame(data={'key': keys, 'index': index}, index=keys_sorted)
+
+        # We call this script from the folder .../src/
+        outputs_path = '../outputs/{}/'.format(model_identifier)
+        if not os.path.exists(outputs_path):
+            # The folder doesn't exist yet because we have not started training.
+            os.mkdir(outputs_path)
+        path_out = os.path.join(outputs_path, filename_out)
+        df.to_csv(path_out)
 
 class HDF5Source(BaseHDF5Source):
     """HDF5 data loading class (using h5py)."""
@@ -125,6 +150,7 @@ class HDF5SourceRaw(HDF5Source):
         return entry
 
 
+
 class BootstrappedHDF5Source(BaseHDF5Source):
     """HDF5 data loading class (using h5py)."""
 
@@ -159,7 +185,7 @@ class BootstrappedHDF5Source(BaseHDF5Source):
                 self._index_to_key[index_counter] = (key, i)
                 index_counter += 1
         # Keep track of training indices (use for out-of-bag-error calculation)
-        self.persist_indices(self._index_to_key, model_identifier)
+        self.persist_indices(self._index_to_key, model_identifier, 'train_indices.csv')
 
         self._num_entries = index_counter
 
@@ -171,31 +197,6 @@ class BootstrappedHDF5Source(BaseHDF5Source):
         # Set index to 0 again as base class constructor called HDF5Source::entry_generator once to
         # get preprocessed sample.
         self._current_index = 0
-
-    def persist_indices(self, index_to_key_dict: dict, model_identifier):
-        """
-        Writes the index_to_key_dict to a csv file. Creates a folder in .../outputs/ called model_identifier. In that
-        folder a csv file called "train_indices.csv" will contain the index_to_key_dict.
-        :param index_to_key_dict: self._index_to_key
-        :param model_identifier: e.g. DenseBag_RS009_123451234
-        :return: None
-        """
-        logger.info("Storing training indices")
-
-        # dicts are not sorted. We now sort it to make sure to keep the correct pairs.
-        keys_sorted = sorted(index_to_key_dict.keys())
-        # keys is either "train" or "validation"
-        keys = [index_to_key_dict[i][0] for i in range(len(keys_sorted))]
-        # index of the example in the dataset
-        index = [index_to_key_dict[i][1] for i in range(len(keys_sorted))]
-        df = pd.DataFrame(data={'key': keys, 'index': index}, index=keys_sorted)
-
-        # We call this script from the folder .../src/
-        outputs_path = '../outputs/{}/'.format(model_identifier)
-        # The folder doesn't exist yet because we have not started training.
-        os.mkdir(outputs_path)
-        path_out = os.path.join(outputs_path, 'train_indices.csv')
-        df.to_csv(path_out)
 
 
 class ValidationSetHDF5Source(BaseHDF5Source):
@@ -231,13 +232,11 @@ class ValidationSetHDF5Source(BaseHDF5Source):
                     self._index_to_key[index_counter] = tuple_identifier
                     index_counter += 1
 
-                # debug
-                if len(self._index_to_key) > 10:
-                    break
-
-
         self._num_entries = index_counter
         logger.info("Validation Set has {} entries (training set has {} entries)".format(self._num_entries, len(training_indices)))
+
+        self.persist_indices(self._index_to_key, model_identifier, filename_out='validation_indices.csv')
+        self.persist_validation_truth(self._index_to_key, hdf5, keys_to_use, model_identifier)
 
         self._hdf5 = hdf5
         self._mutex = Lock()
@@ -263,5 +262,24 @@ class ValidationSetHDF5Source(BaseHDF5Source):
         # 1            (train, 10799)
         # 2             (train, 9845)
         return key_indey_pairs.values.tolist()
+
+    def persist_validation_truth(self, index_to_key, hdf5_file, keys_to_use, model_identifier):
+        def get_pitch(hdf5_file, key, index):
+            return hdf5_file[key]['gaze'][index][0]
+
+        def get_yaw(hdf5_file, key, index):
+            return hdf5_file[key]['gaze'][index][1]
+
+        pitch = [get_pitch(hdf5_file, index_to_key[i][0], index_to_key[i][1]) for i in sorted(index_to_key.keys())]
+        yaw = [get_yaw(hdf5_file, index_to_key[i][0], index_to_key[i][1]) for i in sorted(index_to_key.keys())]
+        # data = {i: [get_pitch(hdf5_file, index_to_key[i][0], index_to_key[i][1]), get_yaw(hdf5_file, index_to_key[i][0], index_to_key[i][1])] for i in sorted(index_to_key.keys())}
+
+        df = pd.DataFrame({'pitch': pitch, 'yaw': yaw})
+        # df = pd.DataFrame.from_dict(data, orient='index')
+        # df.columns = ['pitch', 'yaw']
+        df.index.name = 'Id'
+        path_out = '../outputs/{}/validation_truth.csv'.format(model_identifier)
+        df.to_csv(path_out)
+        logger.info("Written {} validation entries to {}".format(len(df.index), path_out))
 
 
