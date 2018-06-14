@@ -1,7 +1,11 @@
+import logging
 import os
 import re
 import pandas as pd
 import numpy as np
+
+
+logger = logging.getLogger("DenseBagBagger")
 
 
 def get_latest_submission(folder):
@@ -17,6 +21,9 @@ def get_latest_submission(folder):
         result = re.sub('[^0-9]', '', filename)
         return int(result)
     target_files_sorted = sorted(target_files, key=lambda a: extract_timestamp(a))
+    if len(target_files_sorted) == 0:
+        logger.warning("No submission found in folder {}".format(folder))
+        return ""
     return target_files_sorted[-1]
 
 
