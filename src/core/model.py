@@ -235,6 +235,8 @@ class BaseModel(object):
             self._optimize_ops.append(optimize_ops)
 
             logger.info('Built optimizer for: %s' % ', '.join(loss_terms.keys()))
+        all_variables_to_train = np.sum([np.product([xi.value for xi in x.get_shape()]) for x in tf.trainable_variables()])
+        logger.info("Number of trainable variables: {}".format(all_variables_to_train))
 
     def train(self, num_epochs=None, num_steps=None):
         """Train model as requested."""

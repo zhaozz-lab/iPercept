@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Main script for training a model for gaze estimation."""
+"""
+Train the DenseBag eye gaze estimation model
+--------------------------------------------
+
+
+"""
 import argparse
 
 import coloredlogs
@@ -13,7 +18,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def get_model(session, learning_rate, identifier, random_seed):
+def get_model(session: tf.Session, learning_rate: tf.Variable, identifier: str, random_seed: int):
+    """
+    Loads the Model given specifications.
+    :param session:
+    :param learning_rate: tf.Variable holding the float learning rate
+    :param identifier: e.g. DenseBag_RS000_1528804911
+    :param random_seed: e.g. 12345
+    :return: Model
+    """
     model = Model(
         session,
         learning_schedule=[
@@ -41,11 +54,19 @@ def get_model(session, learning_rate, identifier, random_seed):
         },
         test_data={}, # we don't use a validation set any more
     )
+    # We want to use a custom identifier.
     model.model_identifier = identifier
     return model
 
 
-def update_learning_rate(session, learning_rate_variable, new_learning_rate):
+def update_learning_rate(session: tf.Session, learning_rate_variable: tf.Variable, new_learning_rate: float):
+    """
+    Runs a tf.Session and updates the current learning rate stored in learning_rate_variable.
+    :param session:
+    :param learning_rate_variable:
+    :param new_learning_rate: e.g. 0.001
+    :return: None
+    """
     assign_op = learning_rate_variable.assign(new_learning_rate)
     session.run(assign_op)
 
@@ -64,7 +85,6 @@ if __name__ == '__main__':
         level=args.v.upper(),
     )
 
-    # Initialize Tensorflow session
     tf.logging.set_verbosity(tf.logging.INFO)
     gpu_options = tf.GPUOptions(allow_growth=True)
 
@@ -72,6 +92,8 @@ if __name__ == '__main__':
     batch_size = 64
     B = args.B
     B_start = args.B_start
+
+    # Make sure the user did not accidently swap the parameters
     if B_start >= B:
         logger.warning("B_start must be smaller than B. B_start={} is not smaller than B={}!".format(B_start, B))
         exit()
