@@ -209,6 +209,11 @@ class BaseModel(object):
         self._optimize_ops = []
         all_trainable_variables = tf.trainable_variables()
 
+        total_parameters = 0
+        for variable in all_trainable_variables:
+            total_parameters += 1
+        logger.info("Number of trainable variables: {}".format(total_parameters))
+
         for spec in self._learning_schedule:
             optimize_ops = []
             loss_terms = spec['loss_terms_to_optimize']
