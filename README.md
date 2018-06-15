@@ -68,7 +68,7 @@ After training the base models you can average their predictions using the scrip
 We noted that when training several models using train_densebag.py the Azure Virtual Machine freezes after training 5 models in a row. We have not solved this problem (we suspect issues with the VM or a problem with tensorflow). To mitigate this you can train models in batches of 5. If you find out how to fix this issue, please let us know. Thank you.
 
 # Download Pre-Trained Base Models
-You might not want to retrain the model. We provide you with a collection of 30 pre-trained base models by [here.](http://mbuehler.ch/public_downloads/DenseBag_trained-models.zip). These models were each trained on a bootstrapped sample of a combined dataset of the MPII training and validation sets.
+You might not want to retrain the model. We provide you with a collection of 30 pre-trained base models by [here](http://mbuehler.ch/public_downloads/densebag/DenseBag_trained-models.zip). These models were each trained on a bootstrapped sample of a combined dataset of the MPII training and validation sets.
 
 # Archive
 We experimented with a number of different architectures. The code for building and training these models has been moved to archive folders (e.g. src/archive, src/models/archive,...).
