@@ -18,17 +18,19 @@ TODO: Intro
 ```
 2. Make sure you have installed the required python modules.
 ```python
-	python setup.py
+	python setup.py install
 ```
 3. Create a folder and add the [dataset](http://mbuehler.ch/public_downloads/densebag/MPIIGaze_kaggle_students.h5):
 ```shell
 	mkdir datasets 
 	cd datasets
 	wget http://mbuehler.ch/public_downloads/densebag/MPIIGaze_kaggle_students.h5
+	cd ..
 ```
 4. Create the folder for the outputs 
 ```shell
 	mkdir outputs/
+	cd ..
 ```
 5. Now you can run the training script from the source folder
 ```shell
