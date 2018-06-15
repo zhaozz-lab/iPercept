@@ -2,28 +2,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import argparse
-from datetime import datetime
-import hashlib
 import os.path
-import random
-import re
-import struct
 import sys
 import tarfile
-import h5py
-import cv2
-import numpy as np
-from PIL import Image
-from cv2.cv2 import imshow
-from six.moves import urllib
-from matplotlib import pyplot as plt
-import tensorflow as tf
 
-from tensorflow.python.framework import graph_util
-from tensorflow.python.framework import tensor_shape
+import cv2
+import h5py
+import numpy as np
+import tensorflow as tf
+from six.moves import urllib
 from tensorflow.python.platform import gfile
-from tensorflow.python.util import compat
 
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
 BOTTLENECK_TENSOR_NAME = 'pool_3/_reshape:0'
@@ -48,7 +36,7 @@ def load_images_from_hd5(path_in, key, dataset):
 
 
 def encode_and_bottleneck(i, image, sess, jpeg_data_tensor, bottleneck_tensor):
-    if i%100 == 0:
+    if i % 100 == 0:
         print(i)
     image_rgb = image
     # image_rgb = np.zeros((36,60,3))
@@ -60,8 +48,8 @@ def encode_and_bottleneck(i, image, sess, jpeg_data_tensor, bottleneck_tensor):
 
 
 def create_bottleneck_values(sess, jpeg_data_tensor, bottleneck_tensor, images):
-
-    bottleneck_values = [encode_and_bottleneck(i, img, sess, jpeg_data_tensor, bottleneck_tensor) for i,img in enumerate(images)]
+    bottleneck_values = [encode_and_bottleneck(i, img, sess, jpeg_data_tensor, bottleneck_tensor) for i, img in
+                         enumerate(images)]
     return np.array(bottleneck_values)
 
 
@@ -114,7 +102,6 @@ def main():
 
     file_out = h5py.File(path_out, 'w')
 
-
     keys = ['train', 'test', 'validation']
 
     for key in keys:
@@ -130,17 +117,12 @@ def main():
 
         eye_data = load_images_from_hd5(path_in, key, 'eye')
 
-        #eye_data = eye_data[:1000]
+        # eye_data = eye_data[:1000]
 
         bottleneck_values = create_bottleneck_values(sess, jpeg_data_tensor, bottleneck_tensor, eye_data)
 
         file_out[key]['eye'] = bottleneck_values
 
 
-
-
 if __name__ == '__main__':
-
-
     main()
-
