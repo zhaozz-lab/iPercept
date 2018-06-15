@@ -29,6 +29,7 @@ def get_latest_submission(folder):
 
 def get_files(base_path, prefix):
     """
+    Returns submission files in basepath where model name starts with prefix.
     :param base_path: absolute or relative path
     :param prefix:
     :return: list of path for all files in folder that start with prefix
@@ -57,3 +58,18 @@ def get_average(list_df, column):
     data = {i: list_df[i][column] for i in range(len(list_df))}
     df_all = pd.DataFrame(data)
     return np.mean(df_all, axis=1)
+
+
+def sample_random_submission_files(n: int, base_path, prefix):
+    all_submission_files = get_files(base_path, prefix)
+    return np.random.choice(all_submission_files, size=n, replace=False)
+
+
+def get_average_df_from_files(files):
+    list_df = get_dataframes_from_csv_list(files)
+    return pd.DataFrame(
+        {
+            'pitch': get_average(list_df, 'pitch'),
+            'yaw': get_average(list_df, 'yaw')
+        }
+    )

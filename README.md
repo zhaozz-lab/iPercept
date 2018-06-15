@@ -1,11 +1,29 @@
-# Bugs
+# How to Reproduce Results
 
 We trained the model on the Azure Ubuntu Data Science Machine. Training a single model took between 30 and 40 minutes.
 
-We noted that when training several models using train_densebag.py the machine stops after training 5 models. Restarting the script works well (don't forget to change the parameters B and B_start in order not to use the same random seed again).
+In order to retrain the DenseBag model, train B DenseNet models using the script "train_densebag.py". For example, for training 10 models use "train_densebag.py -B 10".
+
+The parameter B is set as random seed. Make sure you use different random seeds for training the model. For example if you have already trained 10 models, you can keep training using the optional parameter B_start, i.e. "train_densebag.py -B_start 10 -B 15". This will train another 5 models and use the random seed 10,11,...
+
+Of course you can train models in parallel on different machines. Again please make sure to use different random seeds.
+
+After training your B models you can average their predictions using the script utils/densebag_bag_predictions.py.
+1. Create a new folder "outputs/DenseBag"
+2. Copy all output folders for your models (e.g. "DenseBag_RS001_12345" to the newly created folder "outputs/DenseBag".
+3. Run "utils/densebag_bag_predictions.py". This will produce a kaggle submission file in the "outputs/DenseBag" folder.
+
+Issues
+
+We noted that when training several models using train_densebag.py the machine stops after training 5 models.
+To mitigate this we trained our models using bash "screen" and restarted the script after 5 iterations.
+
+works well (don't forget to change the parameters B and B_start in order not to use the same random seed again).
 We did not look into this issue.
 
 
+#Download Trained Models
+You can download all our trained models here TODO
 
 
 
