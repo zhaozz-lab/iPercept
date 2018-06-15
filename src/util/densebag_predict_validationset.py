@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Main script for training a model for gaze estimation."""
+"""Main script for validating a model for gaze estimation. Call this script from the src folder."""
 import argparse
 
 import coloredlogs
@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
     logger.info("Evaluating models {}".format(", ".join(trained_model_identifiers)))
     for i, model_identifier in enumerate(trained_model_identifiers):
-        logger.info("Evaluating model {}/{} (identifier: {})".format(i, len(trained_model_identifiers), model_identifier))
+        logger.info("Evaluating model {}/{} (identifier: {})".format(i, len(trained_model_identifiers)-1, model_identifier))
 
         path_out = '../outputs/{}/validation_predictions.csv'.format(model_identifier)
         if not os.path.exists(path_out):

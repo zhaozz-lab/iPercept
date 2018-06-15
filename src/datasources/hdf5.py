@@ -105,6 +105,7 @@ class BaseHDF5Source(BaseDataSource):
         path_out = os.path.join(outputs_path, filename_out)
         df.to_csv(path_out)
 
+
 class HDF5Source(BaseHDF5Source):
     """HDF5 data loading class (using h5py)."""
     def __init__(self,
@@ -148,7 +149,6 @@ class HDF5SourceRaw(HDF5Source):
         entry['eye'] = entry['eye'].astype(np.float32)
         entry['gaze'] = entry['gaze'].astype(np.float32)
         return entry
-
 
 
 class BootstrappedHDF5Source(BaseHDF5Source):

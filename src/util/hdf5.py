@@ -16,6 +16,7 @@ def scan_hdf5(path, recursive=True, tab_step=2):
     with h5py.File(path, 'r') as f:
         scan_node(f)
 
+
 def scan_hdf52(path, recursive=True, tab_step=2):
     def scan_node(g, tabs=0):
         elems = []

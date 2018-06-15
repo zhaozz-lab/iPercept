@@ -7,7 +7,7 @@ import time
 
 import pandas as pd
 
-from densebag_utils import get_files, get_average, get_dataframes_from_csv_list, get_average_df_from_files, sample_random_submission_files
+from densebag_utils import get_all_submission_files, get_average, get_dataframes_from_csv_list, get_average_df_from_files, sample_random_submission_files
 
 base_path = "../../outputs/DenseBag/"
 prefix = "DenseBag_RS"
@@ -19,10 +19,9 @@ def success_message(files, df_result, path_out):
     print("Written to file {}".format(path_out))
 
 
-
-def bag_random_sample(sample_size):
+def bag_random_sample(sample_size, file_prefix):
     path_out = os.path.join(base_path, "random_sample_B_{}_{}.csv".format(sample_size, int(time.time())))
-    files = sample_random_submission_files(sample_size, base_path, prefix)
+    files = sample_random_submission_files(sample_size, base_path, prefix, file_prefix)
     df_result = get_average_df_from_files(files)
     df_result.index.name = 'Id'
     df_result.to_csv(path_out)
@@ -31,7 +30,7 @@ def bag_random_sample(sample_size):
 
 
 def bag_all():
-    files = get_files(base_path, prefix)
+    files = get_all_submission_files(base_path, prefix)
     df_result = get_average_df_from_files(files)
     df_result.index.name = 'Id'
 
