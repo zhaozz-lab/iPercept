@@ -52,6 +52,8 @@ The weights of the trained base models are saved in the outputs folder: `../outp
 
 We recommend to train several models in parallel on different machines / GPUs. Again please make sure to use different random seeds, otherwise the final model might not perform optimally.
 
+In our experiments we started obtaining good results using B=10 models. For 10 < B < 30 the results got better and better. For B>30 we did not significantly improve the kaggle score any more (although the variance might be reduced further for larger B). See bellow for possible issues for training.
+
 Note: We trained the model on the [Azure Ubuntu Data Science Machine](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/microsoft-ads.linux-data-science-vm-ubuntu?tab=Overview) (1 Nvidia Tesla K80 GPU). Training a single model took between 30 and 40 minutes. 
 
 ## Step 2: Aggregation: Averaging Predictions
@@ -66,11 +68,11 @@ After training the base models you can average their predictions using the scrip
 We noted that when training several models using train_densebag.py the Azure Virtual Machine freezes after training 5 models in a row. We have not solved this problem (we suspect issues with the VM or a problem with tensorflow). To mitigate this you can train models in batches of 5. If you find out how to fix this issue, please let us know. Thank you.
 
 # Download Pre-Trained Base Models
-You might not want to retrain the model. We provide you with a collection of 30 pre-trained base models by [here.](http://mbuehler.ch/public_downloads/DenseBag_trained-models.zip). These models were trained on both the MPII training and validation set using bootstrapping.
+You might not want to retrain the model. We provide you with a collection of 30 pre-trained base models by [here.](http://mbuehler.ch/public_downloads/DenseBag_trained-models.zip). These models were each trained on a bootstrapped sample of a combined dataset of the MPII training and validation sets.
 
 # Archive
 We experimented with a number of different architectures. The code for building and training these models has been moved to archive folders (e.g. src/archive, src/models/archive,...).
 
 # Acknowledgement
-We would like to thank the [ETH AIT Lab](https://ait.ethz.ch/) for organising this challenge and writing the skeleton code. A big thanks goes to [Microsoft Azure](https://azure.microsoft.com/en-gb/) for providing us with the ressources to train DenseBag. Lastly, thanks to [Yixuan Li](https://github.com/YixuanLi/densenet-tensorflow) for the implementation of the [DenseNet Model](http://arxiv.org/abs/1608.06993), which we adapted to our needs.
+We would like to thank the [ETH AIT Lab](https://ait.ethz.ch/) for organising this challenge and writing the skeleton code. A big thanks goes to [Microsoft Azure](https://azure.microsoft.com/en-gb/) for providing us with the ressources to train DenseBag. Lastly, thanks to [Yixuan Li](https://github.com/YixuanLi/densenet-tensorflow) for the implementation of the [DenseNet](http://arxiv.org/abs/1608.06993) Model, which we adapted to our needs.
 

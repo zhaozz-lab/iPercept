@@ -51,7 +51,7 @@ def update_learning_rate(session, learning_rate_variable, new_learning_rate):
     session.run(assign_op)
 
 
-def get_trained_model_identifiers(path, prefix="DenseBag_RS"):
+def get_trained_model_identifiers(path, prefix="DenseBag_Validation_RS"):
     model_folders = [f for f in os.listdir(path) if f.startswith(prefix)]
     return model_folders
 
@@ -102,14 +102,13 @@ if __name__ == '__main__':
 
                 # this will load the saved weights
                 model.train(num_epochs=0)
-
                 # Evaluate for Kaggle submission
                 pred_validationsset = model.evaluate_validationset(
                     ValidationSetHDF5Source(
                         session,
                         batch_size,
                         hdf_path='../datasets/MPIIGaze_kaggle_students.h5',
-                        keys_to_use=['train', 'validation'],
+                        keys_to_use=['validation'],
                         testing=True,
                         model_identifier=model_identifier
                     )
