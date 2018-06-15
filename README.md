@@ -6,7 +6,7 @@ GitHub URL: https://github.com/mbbuehler/iPercept
 
 This repository contains the code for DenseBag, a neural network architecture for the problem of eye gaze estimation.
 
-DenseBag consists of multiple Dense Connected Convolutional Neural Networks which are trained independently on bootstrapped samples from the original data and then averaged to give a final result, reducing the variance and overfitting demonstrated by the individual estimators. The approach shows promising results on the MPIIGaze dataset (a paper describing the results will be uploaded shortly).
+DenseBag consists of multiple Dense Connected Convolutional Neural Networks which are trained independently on bootstrapped samples from the original data and then averaged to give a final result, reducing the variance and overfitting demonstrated by the individual estimators. The approach shows promising results on the MPIIGaze dataset (see the [report](report_buehler-and-regan_2018_densebag.pdf)).
 
 # Setup
 
