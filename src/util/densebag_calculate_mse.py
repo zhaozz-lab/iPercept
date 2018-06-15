@@ -1,3 +1,16 @@
+"""
+This script calculates the mse and angular error for DenseBag_Validation models. The script iterates over all available
+B and saves the output here:
+outputs/DenseBagValidation/validation_data.pickle
+
+Pickle format:
+{B: {mse:[], angular: [], pred:[(pitch, yaw)]}}
+i.e:
+b = {1: {'mse': [0.005, 0.003, 0.006], 'angular': [5.5, 5.3, 5.6], 'pred': [(-0.02, 0.01), (-0.02, 0.02), (-0.03, -0.01)]},
+ 2: {'mse': [0.005, 0.003, 0.006], 'angular': [5.5, 5.3, 5.6], 'pred': [(-0.02, 0.01), (-0.02, 0.02), (-0.03, -0.01)]}
+   }
+"""
+
 import itertools
 import logging
 import pickle
@@ -6,8 +19,6 @@ from densebag_utils import get_average_df_from_files, get_all_submission_files, 
     calculate_mse, get_angular_error, load_validation_gaze
 
 logger = logging.getLogger(__name__)
-
-
 
 
 def get_result_for_B(B, df_true, submission_files):
@@ -36,7 +47,6 @@ if __name__ == "__main__":
     results = {B: get_result_for_B(B, df_true, submission_files) for B in range(1, len(submission_files) -1 )}
     print(results.keys())
 
-
     path_out = '../../outputs/DenseBagValidation/validation_data.pickle'
     with open(path_out, 'wb') as out_file:
         pickle.dump(results, out_file)
@@ -47,8 +57,3 @@ if __name__ == "__main__":
     #     print(d.keys())
     #     print(d[1])
 
-# {B: {mse:[], angular: [], pred:[(pitch, yaw)]}}
-# i.e:
-# b = {1: {'mse': [0.005, 0.003, 0.006], 'angular': [5.5, 5.3, 5.6], 'pred': [(-0.02, 0.01), (-0.02, 0.02), (-0.03, -0.01)]},
-#     2: {'mse': [0.005, 0.003, 0.006], 'angular': [5.5, 5.3, 5.6], 'pred': [(-0.02, 0.01), (-0.02, 0.02), (-0.03, -0.01)]}
-#      }
