@@ -1,14 +1,14 @@
 
+
 # DenseBag: a Neural Network Architecture for Eye Gaze Estimation
 ---------------------------
 GitHub URL: https://github.com/mbbuehler/iPercept
 
+This repository contains the code for DenseBag, a neural network architecture for the problem of eye gaze estimation.
 
-TODO: Intro
-
+DenseBag consists of multiple Dense Connected Convolutional Neural Networks which are trained independently on bootstrapped samples from the original data and then averaged to give a final result, reducing the variance and overfitting demonstrated by the individual estimators. The approach shows promising results on the MPIIGaze dataset (a paper describing the results will be uploaded shortly).
 
 # Setup
-
 
 1. Download [densebag_code.zip](http://mbuehler.ch/public_downloads/densebag/densebag_code.zip) and extract
 ```shell
@@ -74,5 +74,5 @@ You might not want to retrain the model. We provide you with a collection of 30 
 We experimented with a number of different architectures. The code for building and training these models has been moved to archive folders (e.g. src/archive, src/models/archive,...).
 
 # Acknowledgement
-We would like to thank the [ETH AIT Lab](https://ait.ethz.ch/) for organising this challenge and writing the skeleton code. A big thanks goes to [Microsoft Azure](https://azure.microsoft.com/en-gb/) for providing us with the ressources to train DenseBag. Lastly, thanks to [Yixuan Li](https://github.com/YixuanLi/densenet-tensorflow) for the implementation of the [DenseNet](http://arxiv.org/abs/1608.06993) Model, which we adapted to our needs.
+We would like to thank the [ETH AIT Lab](https://ait.ethz.ch/) for organising this challenge and writing the skeleton code. A big thanks goes to [Microsoft Azure](https://azure.microsoft.com/en-gb/) for providing us with the resources to train DenseBag. Lastly, thanks to [Yixuan Li](https://github.com/YixuanLi/densenet-tensorflow) for the implementation of the [DenseNet](http://arxiv.org/abs/1608.06993) Model, which we adapted to our needs.
 
