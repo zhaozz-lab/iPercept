@@ -1,101 +1,62 @@
-# How to Reproduce Results
 
-We trained the model on the Azure Ubuntu Data Science Machine. Training a single model took between 30 and 40 minutes.
+# DenseBag: a Neural Network Architecture for Eye Gaze Estimation
+---------------------------
+GitHub: https://github.com/mbbuehler/iPercept
 
-In order to retrain the DenseBag model, train B DenseNet models using the script "train_densebag.py". For example, for training 10 models use "train_densebag.py -B 10".
 
-The parameter B is set as random seed. Make sure you use different random seeds for training the model. For example if you have already trained 10 models, you can keep training using the optional parameter B_start, i.e. "train_densebag.py -B_start 10 -B 15". This will train another 5 models and use the random seed 10,11,...
+TODO: Intro
 
-Of course you can train models in parallel on different machines. Again please make sure to use different random seeds.
 
-After training your B models you can average their predictions using the script utils/densebag_bag_predictions.py.
+# Setup
+
+1. Download densebag_code.zip and extract
+	wget http://mbuehler.ch/public_downloads/densebag/densebag_code.zip
+	unzip densebag_code.zip
+2. Create a folder and add the dataset:
+	mkdir datasets 
+	cd datasets
+	wget http://mbuehler.ch/public_downloads/densebag/MPIIGaze_kaggle_students.h5
+3. Create the folder for the outputs 
+	mkdir outputs/
+4. Now you can run the training script from the source folder
+	 cd src/
+	 python train_densebag.py -B_start 10 -B 13
+
+The next section describes in more detail how to train and make predictions using DenseBag.
+
+# How to Use DenseBag / Reproduce Results
+
+Training the DenseBag model consists of two steps. In the following they are explained in detail.
+
+## Step 1: Bootstrap & Training: Base Models
+In order to retrain the DenseBag model, you start by training a number B of base models (DenseNetFixed) using the script "train_densebag.py". For example, you can train 10 models use "train_densebag.py -B 10".
+
+The parameter B is set as random seed. Make sure you use different random seeds for training the model. For example if you have already trained 10 models with random seed B=0,...,9, you can train more models using the optional parameter B_start, i.e. "train_densebag.py -B_start 10 -B 15". This will train another 5 models and use the random seed 10,11,...,14.
+
+The weights of the trained base models are saved in the outputs folder: ../outputs/DenseBag_RS<B>_<timestamp> . This folder also contains a csv file "to_submit_to_kaggle_<timestamp>.csv". This file contains the predictions for this base model on the test set. In the second step we will average these predictions.
+
+We recommend to train several models in parallel on different machines / GPUs. Again please make sure to use different random seeds, otherwise the final model might not perform optimally.
+
+Note: We trained the model on the [Azure Ubuntu Data Science Machine](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/microsoft-ads.linux-data-science-vm-ubuntu?tab=Overview) (1 Nvidia Tesla K80 GPU). Training a single model took between 30 and 40 minutes. 
+
+## Step 2: Aggregation: Averaging Predictions
+
+After training the base models you can average their predictions using the script utils/densebag_bag_predictions.py. For a clean file hierarchy we recommend storing the trained models and predictions in a new folder. Here is how to do it:
 1. Create a new folder "outputs/DenseBag"
-2. Copy all output folders for your models (e.g. "DenseBag_RS001_12345" to the newly created folder "outputs/DenseBag".
-3. Run "utils/densebag_bag_predictions.py". This will produce a kaggle submission file in the "outputs/DenseBag" folder.
+2. Move / copy all output folders for your models (e.g. "DenseBag_RS001_12345" to the newly created folder "outputs/DenseBag".
+3. Go to directory "src/util" and run "densebag_bag_predictions.py". This will produce a kaggle submission file in the "outputs/DenseBag" folder, e.g. "to_submit_to_kaggle_B_98_1529048062.csv".
 
-Issues
+### Possible Issues
 
-We noted that when training several models using train_densebag.py the machine stops after training 5 models.
-To mitigate this we trained our models using bash "screen" and restarted the script after 5 iterations.
-
-works well (don't forget to change the parameters B and B_start in order not to use the same random seed again).
-We did not look into this issue.
+We noted that when training several models using train_densebag.py the Azure Virtual Machine freezes after training 5 models in a row. We have not solved this problem (we suspect issues with the VM or a problem with tensorflow). To mitigate this you can train models in batches of 5.
 
 
-#Download Trained Models
-You can download all our trained models here TODO
+# Download Pre-Trained Base Models
+You might not want to retrain the model. We provide you with a collection of 30 pre-trained base models by [here.](http://mbuehler.ch/public_downloads/DenseBag_trained-models.zip). These models were trained on both the MPII training and validation set using bootstrapping.
 
+# Archive
+We experimented with a number of different architectures. The code for building and training these models has been moved to archive folders (e.g. src/archive, src/models/archive,...).
 
+# Thank You
+We would like to thank the [ETH AIT Lab](https://ait.ethz.ch/) for organising this challenge and providing the skeleton code. A big thanks goes to [Microsoft Azure](https://azure.microsoft.com/en-gb/) for providing us with the ressources to train DenseBag. Lastly, thanks to [Yixuan Li](https://github.com/YixuanLi/densenet-tensorflow) for the implementation of the [DenseNet Model](http://arxiv.org/abs/1608.06993), which we adapted to our needs.
 
-
-# --------------------------
-
-# Eye Gaze Estimation Skeleton Code
-Visit [here](https://ait.ethz.ch/teaching/courses/2018-SS-Machine-Perception/) for more information about the Machine Perception course.
-
-All questions should first be directed to [our course Piazza](https://piazza.com/class/jdbpmonr7fa26b) before being sent to my [e-mail address](mailto:spark@inf.ethz.ch).
-
-## Setup
-
-The following two steps will prepare your environment to begin training and evaluating models.
-
-### Downloading necessary datasets
-
-Simply run
-
-```
-cd datasets
-bash get_datasets.bash
-```
-
-### Installing dependencies
-
-Run (with `sudo` appended if necessary),
-```
-python3 setup.py install
-```
-
-Note that this can be done within a [virtual environment](https://docs.python.org/3/tutorial/venv.html). In this case, the sequence of commands would be similar to:
-```
-    mkvirtualenv -p $(which python3) myenv
-    python3 setup.py install
-```
-
-when using [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/).
-
-## Structure
-
-* `datasets/` - all data sources required for training/validation/testing.
-* `outputs/` - any output for a model will be placed here, including logs, summaries, checkpoints, and Kaggle submission `.csv` files.
-* `src/` - all source code.
-    * `core/` - base classes
-    * `datasources/` - routines for reading and preprocessing entries for training and testing
-    * `models/` - neural network definitions
-    * `util/` - utility methods
-    * `main.py` - training script
-
-## Creating your own model
-### Model definition
-To create your own neural network, do the following:
-1. Make a copy of `src/models/example.py`. For the purpose of this documentation, let's call the new file `newmodel.py` and the class within `NewModel`.
-2. Now edit `src/models/__init__.py` and insert the new model by making it look like:
-
-```
-from .example import ExampleNet
-from .newmodel import NewModel
-__all__ = ('ExampleNet', 'NewModel')
-```
-
-3. Lastly, make a copy or edit `src/main.py` such that it imports and uses class `NewModel` instead of `ExampleNet`.
-
-### Training the model
-If your training script is called `main.py`, simply `cd` into the `src/` directory and run
-```
-python3 main.py
-```
-
-### Outputs
-When your model has completed training, it will perform a full evaluation on the test set. For class `ExampleNet`, this output can be found in the folder `outputs/ExampleNet/` as `to_submit_to_kaggle_XXXXXXXXX.csv`.
-
-Submit this `csv` file to our page on [Kaggle](https://www.kaggle.com/c/mp18-eye-gaze-estimation/submissions).
-=======
