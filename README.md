@@ -9,12 +9,18 @@ TODO: Intro
 
 # Setup
 
+
+0. Make sure you have installed the required python modules.
+```python
+	python setup.py
+```
 1. Download [densebag_code.zip](http://mbuehler.ch/public_downloads/densebag/densebag_code.zip) and extract
 ```shell
 	wget http://mbuehler.ch/public_downloads/densebag/densebag_code.zip
 	unzip densebag_code.zip
+	cd densebag_code
 ```
-2. Create a folder and add the dataset:
+2. Create a folder and add the [dataset](http://mbuehler.ch/public_downloads/densebag/MPIIGaze_kaggle_students.h5):
 ```shell
 	mkdir datasets 
 	cd datasets

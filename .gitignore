@@ -103,9 +103,12 @@ ENV/
 .idea/
 datasets/
 outputs/*
-<<<<<<< HEAD
 
 # Numpy Files
 *.npz
 
 transfer-learning
+.DS_Store
+.flake8
+
+densebag_zips
