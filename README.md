@@ -73,6 +73,9 @@ You might not want to retrain the model. We provide you with a collection of 30 
 # Archive
 We experimented with a number of different architectures. The code for building and training these models has been moved to archive folders (e.g. src/archive, src/models/archive,...).
 
+# References
+Appearance-based Gaze Estimation in the Wild, X. Zhang, Y. Sugano, M. Fritz and A. Bulling, Proc. of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR), June, p.4511-4520, (2015). 
+
 # Acknowledgement
 We would like to thank the [ETH AIT Lab](https://ait.ethz.ch/) for organising this challenge and writing the skeleton code. A big thanks goes to [Microsoft Azure](https://azure.microsoft.com/en-gb/) for providing us with the resources to train DenseBag. Lastly, thanks to [Yixuan Li](https://github.com/YixuanLi/densenet-tensorflow) for the implementation of the [DenseNet](http://arxiv.org/abs/1608.06993) Model, which we adapted to our needs.
 
